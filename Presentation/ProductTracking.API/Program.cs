@@ -1,9 +1,36 @@
+using Microsoft.IdentityModel.Tokens;
+using ProductTracking.Application;
+using ProductTracking.Infrastructure;
+using ProductTracking.Persistence;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddPersistenceServices();
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices();
+
+builder.Services.AddAuthentication("admin")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new()
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true, 
+            ValidateIssuerSigningKey = true,
+
+            ValidAudience = builder.Configuration["Token:Audience"],
+            ValidIssuer = builder.Configuration["Token:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SigninKey"])),
+        };
+    });
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
