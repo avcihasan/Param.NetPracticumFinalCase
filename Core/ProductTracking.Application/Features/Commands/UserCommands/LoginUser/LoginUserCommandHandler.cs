@@ -3,11 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using ProductTracking.Application.Abstractions.Token;
 using ProductTracking.Application.DTOs.TokenDTOs;
 using ProductTracking.Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductTracking.Application.Features.Commands.UserCommands.LoginUser
 {
@@ -28,7 +23,7 @@ namespace ProductTracking.Application.Features.Commands.UserCommands.LoginUser
         public async Task<LoginUserCommandResponse> Handle(LoginUserCommandRequest request, CancellationToken cancellationToken)
         {
             AppUser user =await _userManager.FindByNameAsync(request.UserNameOrEmail);
-            if (user==null)
+            if (user == null)
                 user = await _userManager.FindByEmailAsync(request.UserNameOrEmail);
             if (user == null)
                 throw new Exception("Kullanıcı Kaytılı Değil!");
@@ -37,10 +32,10 @@ namespace ProductTracking.Application.Features.Commands.UserCommands.LoginUser
             if (result.Succeeded)
             {
                 TokenDto token = _tokenHandler.CreateAccessToken(5);
-                return new LoginUserSuccessCommandResponse() { Token = token };
+                return new LoginUserCommandResponse() { Token = token };
             }
 
-            return new LoginUserErrorCommandResponse() { Message = "Hatalı Giriş!"};
+            throw new Exception("Hatalı Giriş!");
         }
     }
 }

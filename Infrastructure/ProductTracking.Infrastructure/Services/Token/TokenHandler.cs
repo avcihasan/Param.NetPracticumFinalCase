@@ -24,7 +24,7 @@ namespace ProductTracking.Infrastructure.Services.Token
             
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            //oluşturulacak  token ayarlarını  veriyoruz
+            
             token.Expiration = DateTime.Now.AddMinutes(minute);
 
             JwtSecurityToken jwtSecurityToken = new(

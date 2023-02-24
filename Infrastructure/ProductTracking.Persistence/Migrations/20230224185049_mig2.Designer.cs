@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductTracking.Persistence.Contexts;
 
@@ -11,9 +12,11 @@ using ProductTracking.Persistence.Contexts;
 namespace ProductTracking.Persistence.Migrations
 {
     [DbContext(typeof(ProductTrackingDbContext))]
-    partial class ProductTrackingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230224185049_mig2")]
+    partial class mig2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -256,9 +259,6 @@ namespace ProductTracking.Persistence.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProductListId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -266,30 +266,7 @@ namespace ProductTracking.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ProductListId");
-
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CratedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
-
-                    b.ToTable("ProductLists");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -349,33 +326,10 @@ namespace ProductTracking.Persistence.Migrations
                         .WithMany("Products")
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("ProductTracking.Domain.Entities.ProductList", null)
-                        .WithMany("Products")
-                        .HasForeignKey("ProductListId");
-
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
-                {
-                    b.HasOne("ProductTracking.Domain.Entities.Identity.AppUser", "User")
-                        .WithMany("ProductLists")
-                        .HasForeignKey("AppUserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ProductTracking.Domain.Entities.Category", b =>
-                {
-                    b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("ProductTracking.Domain.Entities.Identity.AppUser", b =>
-                {
-                    b.Navigation("ProductLists");
-                });
-
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
                 {
                     b.Navigation("Products");
                 });
