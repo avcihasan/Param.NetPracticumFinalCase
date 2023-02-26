@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.Abstractions.Token;
 using ProductTracking.Application.DTOs.TokenDTOs;
@@ -19,12 +20,14 @@ namespace ProductTracking.Persistence.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenHandler _tokenHandler;
+        private readonly IUserService _userService;
 
-        public AuthService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler)
+        public AuthService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler, IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenHandler = tokenHandler;
+            _userService = userService;
         }
 
         public async Task<TokenDto> LoginUserAsync(LoginUserDto userDto)
@@ -38,11 +41,25 @@ namespace ProductTracking.Persistence.Services
 
             if (result.Succeeded)
             {
-                TokenDto token = _tokenHandler.CreateAccessToken(5,user);
+                TokenDto token = _tokenHandler.CreateAccessToken(100,user);
                 return token;
             }
 
             throw new Exception("Hatalı Giriş!");
+        }
+
+        public async Task<TokenDto> RefreshTokenLoginUserAsync(string refreshToken)
+        {
+            AppUser? user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow)
+            {
+                TokenDto token = _tokenHandler.CreateAccessToken(15,user);
+                await _userService.UpdateRefreshToken(token.RefreshToken, user, token.Expiration, 15);
+                return token;
+            }
+            else
+                throw new Exception("Kullanıcı Bulunamadı!");
+
         }
     }
 }

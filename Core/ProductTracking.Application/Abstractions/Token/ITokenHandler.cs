@@ -10,6 +10,7 @@ namespace ProductTracking.Application.Abstractions.Token
 {
     public interface ITokenHandler
     {
-        TokenDto CreateAccessToken(int minute, AppUser user);
+        TokenDto CreateAccessToken(int seconds, AppUser user);
+        string CreateRefreshToken();
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProductTracking.Application.DTOs.UserDTOs
 {
-    public class RegisterUserResponseDto
+    public class CreateUserResponseDto
     {
         public bool Succeeded { get; set; }
         public string Message { get; set; }

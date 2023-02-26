@@ -6,6 +6,7 @@ using ProductTracking.Application.DTOs.TokenDTOs;
 using ProductTracking.Domain.Entities.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ProductTracking.Infrastructure.Services.Token
@@ -21,7 +22,7 @@ namespace ProductTracking.Infrastructure.Services.Token
             _logger = logger;
         }
 
-        public TokenDto CreateAccessToken(int minute,AppUser user)
+        public TokenDto CreateAccessToken(int second,AppUser user)
         {
             TokenDto token = new();
              
@@ -30,7 +31,7 @@ namespace ProductTracking.Infrastructure.Services.Token
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
             
-            token.Expiration = DateTime.Now.AddMinutes(minute);
+            token.Expiration = DateTime.Now.AddSeconds(second);
 
             JwtSecurityToken jwtSecurityToken = new(
                 audience: _configuration["Token:SigninKey"],
@@ -45,7 +46,17 @@ namespace ProductTracking.Infrastructure.Services.Token
             JwtSecurityTokenHandler jwtSecurityTokenHandler = new();
             token.AccessToken = jwtSecurityTokenHandler.WriteToken(jwtSecurityToken);
             _logger.LogInformation("############### TOKEN OLUŞTU ###############");
+
+            token.RefreshToken = CreateRefreshToken();
             return token;
+        }
+
+        public string CreateRefreshToken()
+        {
+            byte[] number = new byte[32];
+            using RandomNumberGenerator random = RandomNumberGenerator.Create();
+            random.GetBytes(number);
+            return Convert.ToBase64String(number);
         }
     }
 }

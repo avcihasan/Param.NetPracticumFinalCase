@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using ProductTracking.Application.DTOs.UserDTOs;
 using ProductTracking.Application.Features.Commands.UserCommands.LoginUser;
-using ProductTracking.Application.Features.Commands.UserCommands.RegisterUser;
+using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
 using ProductTracking.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -15,10 +15,10 @@ namespace ProductTracking.Application.Mapping
     {
         public MapProfile()
         {
-            CreateMap<RegisterUserCommandRequest, AppUser>(); 
-            CreateMap<RegisterUserDto, AppUser>(); 
-            CreateMap<RegisterUserCommandRequest, RegisterUserDto>();
-            CreateMap<RegisterUserResponseDto, RegisterUserCommandResponse>();
+            CreateMap<CreateUserCommandRequest, AppUser>(); 
+            CreateMap<CreateUserDto, AppUser>(); 
+            CreateMap<CreateUserCommandRequest, CreateUserDto>();
+            CreateMap<CreateUserResponseDto, CreateUserCommandResponse>();
             CreateMap<LoginUserCommandRequest, LoginUserDto>();
         }
     }

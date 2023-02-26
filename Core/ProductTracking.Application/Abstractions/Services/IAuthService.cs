@@ -11,5 +11,7 @@ namespace ProductTracking.Application.Abstractions.Services
     public interface IAuthService
     {
         Task<TokenDto> LoginUserAsync(LoginUserDto user);
+
+        Task<TokenDto> RefreshTokenLoginUserAsync(string refreshToken);
     }
 }

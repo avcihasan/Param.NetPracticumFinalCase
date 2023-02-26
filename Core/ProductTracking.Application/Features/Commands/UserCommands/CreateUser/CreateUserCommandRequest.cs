@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
-namespace ProductTracking.Application.DTOs.UserDTOs
+namespace ProductTracking.Application.Features.Commands.UserCommands.CreateUser
 {
-    public class RegisterUserDto
+    public class CreateUserCommandRequest:IRequest<CreateUserCommandResponse>
     {
         public string Name { get; set; }
         public string Surname { get; set; }

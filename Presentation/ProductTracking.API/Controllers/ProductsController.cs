@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductTracking.Application.Features.Commands.BasketCommands.AddItemToBasket;
 
 namespace ProductTracking.API.Controllers
 {
@@ -13,6 +15,5 @@ namespace ProductTracking.API.Controllers
             _mediator = mediator;
         }
 
-        
     }
 }
