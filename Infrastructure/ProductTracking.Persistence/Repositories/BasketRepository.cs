@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace ProductTracking.Persistence.Repositories
 {
-    public class ProductListRepository : GenericRepository<ProductList>, IProductListRepository
+    public class BasketRepository : GenericRepository<Basket>, IBasketRepository
     {
-        public ProductListRepository(ProductTrackingDbContext context) : base(context)
+        public BasketRepository(ProductTrackingDbContext context) : base(context)
         {
         }
     }

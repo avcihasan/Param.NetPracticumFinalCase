@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentAssertions.Common;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Persistence.Contexts;
+using ProductTracking.Persistence.Services;
 using ProductTracking.Persistence.UnitOfWorks;
 
 namespace ProductTracking.Persistence
@@ -24,6 +28,9 @@ namespace ProductTracking.Persistence
             .AddDefaultTokenProviders();
 
             service.AddScoped<IUnitOfWork,UnitOfWork>();
+            service.AddScoped<IBasketService, BasketService>();
+            service.AddScoped<IUserService, UserService>();
+            service.AddScoped<IAuthService, AuthService>();
         }
     }
 }

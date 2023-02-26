@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ProductTracking.Application.Repositories;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Persistence.Contexts;
+using System.Linq.Expressions;
 
 namespace ProductTracking.Persistence.Repositories
 {
@@ -41,7 +43,7 @@ namespace ProductTracking.Persistence.Repositories
             if (!tracking)
                 entities = entities.AsNoTracking();
 
-            T entity = await entities.FirstOrDefaultAsync(x => x.Id == id);
+            T entity = await entities.FirstOrDefaultAsync(x => x.Id==Guid.Parse(id));
             if (entity == null)
                 throw new Exception("Entity Bulunamadı!");
             return entity;
@@ -63,6 +65,21 @@ namespace ProductTracking.Persistence.Repositories
         {
             EntityEntry entityEntry = _dbSet.Update(entity);
             return entityEntry.State == EntityState.Modified;
+        }
+
+        public IQueryable<T> GetWhere(Expression<Func<T, bool>> method, bool tracking = true)
+        {
+            var query = _dbSet.Where(method);
+            if (!tracking)
+                query = query.AsNoTracking();
+            return query;
+        }
+        public async Task<T> GetSingleAsync(Expression<Func<T, bool>> method, bool tracking = true)
+        {
+            var query = _dbSet.AsQueryable();
+            if (!tracking)
+                query = _dbSet.AsNoTracking();
+            return await query.FirstOrDefaultAsync(method);
         }
     }
 }

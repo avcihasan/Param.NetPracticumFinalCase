@@ -128,10 +128,62 @@ namespace ProductTracking.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ProductTracking.Domain.Entities.Basket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CratedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Baskets");
+                });
+
+            modelBuilder.Entity("ProductTracking.Domain.Entities.BasketItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BasketId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CratedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasketId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("BasketItems");
+                });
+
             modelBuilder.Entity("ProductTracking.Domain.Entities.Category", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CratedDate")
                         .HasColumnType("datetime2");
@@ -244,20 +296,18 @@ namespace ProductTracking.Persistence.Migrations
 
             modelBuilder.Entity("ProductTracking.Domain.Entities.Product", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CategoryId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CratedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProductListId")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -266,30 +316,7 @@ namespace ProductTracking.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ProductListId");
-
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CratedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
-
-                    b.ToTable("ProductLists");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -343,41 +370,72 @@ namespace ProductTracking.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProductTracking.Domain.Entities.Product", b =>
+            modelBuilder.Entity("ProductTracking.Domain.Entities.Basket", b =>
                 {
                     b.HasOne("ProductTracking.Domain.Entities.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId");
+                        .WithMany("Baskets")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("ProductTracking.Domain.Entities.ProductList", null)
-                        .WithMany("Products")
-                        .HasForeignKey("ProductListId");
+                    b.HasOne("ProductTracking.Domain.Entities.Identity.AppUser", "User")
+                        .WithMany("Baskets")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
-                {
-                    b.HasOne("ProductTracking.Domain.Entities.Identity.AppUser", "User")
-                        .WithMany("ProductLists")
-                        .HasForeignKey("AppUserId");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ProductTracking.Domain.Entities.BasketItem", b =>
+                {
+                    b.HasOne("ProductTracking.Domain.Entities.Basket", "Basket")
+                        .WithMany("BasketItems")
+                        .HasForeignKey("BasketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProductTracking.Domain.Entities.Product", "Product")
+                        .WithMany("BasketItems")
+                        .HasForeignKey("ProductId")
+                        .IsRequired();
+
+                    b.Navigation("Basket");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ProductTracking.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("ProductTracking.Domain.Entities.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("ProductTracking.Domain.Entities.Basket", b =>
+                {
+                    b.Navigation("BasketItems");
+                });
+
             modelBuilder.Entity("ProductTracking.Domain.Entities.Category", b =>
                 {
+                    b.Navigation("Baskets");
+
                     b.Navigation("Products");
                 });
 
             modelBuilder.Entity("ProductTracking.Domain.Entities.Identity.AppUser", b =>
                 {
-                    b.Navigation("ProductLists");
+                    b.Navigation("Baskets");
                 });
 
-            modelBuilder.Entity("ProductTracking.Domain.Entities.ProductList", b =>
+            modelBuilder.Entity("ProductTracking.Domain.Entities.Product", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("BasketItems");
                 });
 #pragma warning restore 612, 618
         }

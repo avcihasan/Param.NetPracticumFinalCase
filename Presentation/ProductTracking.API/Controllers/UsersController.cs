@@ -17,12 +17,10 @@ namespace ProductTracking.API.Controllers
     public class UsersController : CustomBaseController
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfWork _unitOfWork;
 
-        public UsersController(IMediator mediator, IUnitOfWork unitOfWork)
+        public UsersController(IMediator mediator)
         {
             _mediator = mediator;
-            _unitOfWork = unitOfWork;
         }
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterUserCommandRequest registerUserCommandRequest)

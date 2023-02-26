@@ -12,6 +12,9 @@ namespace ProductTracking.Application.UnitOfWorks
     public interface IUnitOfWork
     {
         IGenericRepository<Product> ProductRepository { get; }
+        IGenericRepository<Category> CategoryRepository { get; }
+        IGenericRepository<Basket> BasketRepository { get; }
+        IGenericRepository<BasketItem> BasketItemRepository { get; }
         Task CommitAsync();
 
         void Commit();

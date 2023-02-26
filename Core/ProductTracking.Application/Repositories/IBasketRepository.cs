@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProductTracking.Application.Repositories
 {
-    public interface IProductListRepository:IGenericRepository<ProductList>
+    public interface IBasketRepository:IGenericRepository<Basket>
     {
     }
 }

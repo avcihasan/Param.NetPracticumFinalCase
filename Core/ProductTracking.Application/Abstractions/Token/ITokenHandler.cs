@@ -1,4 +1,5 @@
 ﻿using ProductTracking.Application.DTOs.TokenDTOs;
+using ProductTracking.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace ProductTracking.Application.Abstractions.Token
 {
     public interface ITokenHandler
     {
-        TokenDto CreateAccessToken(int minute);
+        TokenDto CreateAccessToken(int minute, AppUser user);
     }
 }

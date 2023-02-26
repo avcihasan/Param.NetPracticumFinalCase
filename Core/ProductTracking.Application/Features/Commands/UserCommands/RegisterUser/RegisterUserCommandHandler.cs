@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using ProductTracking.Application.Abstractions.Services;
+using ProductTracking.Application.DTOs.UserDTOs;
 using ProductTracking.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -13,27 +15,18 @@ namespace ProductTracking.Application.Features.Commands.UserCommands.RegisterUse
     public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommandRequest, RegisterUserCommandResponse>
     {
 
-        private readonly UserManager<AppUser> _userManager;
+        private readonly IUserService _service;
         private readonly IMapper _mapper;
 
-        public RegisterUserCommandHandler(UserManager<AppUser> userManager, IMapper mapper)
+        public RegisterUserCommandHandler(IMapper mapper, IUserService service)
         {
-            _userManager = userManager;
             _mapper = mapper;
+            _service = service;
         }
         public async Task<RegisterUserCommandResponse> Handle(RegisterUserCommandRequest request, CancellationToken cancellationToken)
         {
-            AppUser user = _mapper.Map<AppUser>(request);
-            user.Id = Guid.NewGuid().ToString();
-            IdentityResult result = await _userManager.CreateAsync(user, request.Password);
-
-            RegisterUserCommandResponse response = new() { Succeeded = result.Succeeded };
-
-            if (result.Succeeded)
-                response.Message = ("Kayıt Başarılı");
-            foreach (IdentityError error in result.Errors)
-                response.Message = (error.Description);
-            return response;
+            RegisterUserResponseDto response = await _service.RegisterUser(_mapper.Map<RegisterUserDto>(request));
+            return _mapper.Map<RegisterUserCommandResponse>(response);
         }
     }
 }
