@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.IdentityModel.Tokens;
+using ProductTracking.API.Extensions;
 using ProductTracking.Application;
 using ProductTracking.Infrastructure;
 using ProductTracking.Persistence;
@@ -73,6 +74,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.ConfigureExceptionHandler<Program>(app.Services.GetRequiredService<ILogger<Program>>());
 
 app.UseSerilogRequestLogging();
 app.UseHttpLogging();
