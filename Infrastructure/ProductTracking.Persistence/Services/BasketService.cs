@@ -2,39 +2,37 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductTracking.Persistence.Services
 {
     public class BasketService : IBasketService
     {
-        readonly IHttpContextAccessor _httpContextAccessor;
-        readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserService _userService;
 
-        public BasketService(IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager, IUnitOfWork unitOfWork)
+        public BasketService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IUserService userService)
         {
-            _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
+            _userService = userService;
         }
 
-        private async Task<Basket> ContextUser(string categoryId=null)
+        private async Task<Basket> ContextUser(string categoryId)
         {
-            var username = _httpContextAccessor.HttpContext.User.Identity.Name;
-            if (!string.IsNullOrEmpty(username))
+            AppUser getUser = await _userService.GetOnlineUserAsync();
+          
+            if (getUser != null)
             {
                 AppUser user = await _userManager.Users
                          .Include(u => u.Baskets)
-                         .FirstOrDefaultAsync(u => u.UserName == username);
+                         .FirstOrDefaultAsync(u => u.UserName == getUser.UserName);
 
                 Basket targetBasket = null;
                 if (user.Baskets.Any(x => x.CategoryId.ToString() == categoryId))
@@ -44,15 +42,16 @@ namespace ProductTracking.Persistence.Services
                     targetBasket = new();
                     targetBasket.CategoryId = Guid.Parse(categoryId);
                     user.Baskets.Add(targetBasket);
+                    await _unitOfWork.CommitAsync();
                 }
 
-                await _unitOfWork.CommitAsync();
-
-                return targetBasket;          
+                return targetBasket;
             }
             throw new Exception("Beklenmeyen bir hatayla karşılaşıldı...");
         }
 
+
+       
         public async Task AddItemToBasketAsync(CreateBasketItemDto basketItem)
         {
             Product p = await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId);
@@ -70,21 +69,24 @@ namespace ProductTracking.Persistence.Services
                         Quantity = basketItem.Quantity
                     });
 
-                await _unitOfWork.CommitAsync(); 
+                await _unitOfWork.CommitAsync();
             }
         }
 
         public async Task<List<BasketItem>> GetBasketItemsAsync()
         {
-            Basket basket = await ContextUser();
-            
-            Basket result = await _unitOfWork.BasketRepository.GetAll()
-                 .Include(b => b.BasketItems)
-                 .ThenInclude(bi => bi.Product)
-                 .FirstOrDefaultAsync(b => b.Id == basket.Id);
+            AppUser user = await _userService.GetOnlineUserAsync();
+            List<BasketItem> basketItems = new();
 
-            return result.BasketItems
-                .ToList();
+            List<Basket> baskets = _unitOfWork.BasketRepository.GetAll()
+                 .Include(b => b.BasketItems)
+                 .ThenInclude(bi => bi.Product).Where(x => x.UserId == user.Id).ToList();
+
+            foreach (Basket basket in baskets)
+                foreach (BasketItem baksetItem in basket.BasketItems)
+                    basketItems.Add(baksetItem);
+            
+            return basketItems;
         }
 
         public async Task RemoveBasketItemAsync(string basketItemId)

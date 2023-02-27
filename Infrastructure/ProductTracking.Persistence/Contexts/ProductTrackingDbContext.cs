@@ -30,5 +30,26 @@ namespace ProductTracking.Persistence.Contexts
 
             base.OnModelCreating(builder);
         }
+
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var datas = ChangeTracker.Entries<BaseEntity>();
+
+            foreach (var data in datas)
+            {
+                if (data.Entity as BaseEntity != null)
+                {
+                    _ = data.State switch
+                    {
+                        EntityState.Added => data.Entity.CreatedDate = DateTime.Now,
+                        _ => DateTime.Now
+                    };
+                }
+
+            }
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
     }
 }

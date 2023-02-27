@@ -50,8 +50,8 @@ namespace ProductTracking.Persistence.Services
 
         public async Task<TokenDto> RefreshTokenLoginUserAsync(string refreshToken)
         {
-            AppUser? user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
-            if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow)
+            AppUser user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            if (user != null && user?.RefreshTokenEndDate > DateTime.Now)
             {
                 TokenDto token = _tokenHandler.CreateAccessToken(15,user);
                 await _userService.UpdateRefreshToken(token.RefreshToken, user, token.Expiration, 15);

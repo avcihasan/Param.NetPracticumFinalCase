@@ -25,27 +25,23 @@ namespace ProductTracking.Infrastructure.Services.Token
         public TokenDto CreateAccessToken(int second,AppUser user)
         {
             TokenDto token = new();
-             
+
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_configuration["Token:SigninKey"]));
-            
+
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            
-            token.Expiration = DateTime.Now.AddSeconds(second);
-
-            JwtSecurityToken jwtSecurityToken = new(
-                audience: _configuration["Token:SigninKey"],
+            token.Expiration = DateTime.Now.AddHours(second);
+            JwtSecurityToken securityToken = new(
+                audience: _configuration["Token:Audience"],
                 issuer: _configuration["Token:Issuer"],
                 expires: token.Expiration,
                 notBefore: DateTime.Now,
                 signingCredentials: signingCredentials,
-                claims:new List<Claim> { new(ClaimTypes.Name, user.UserName) }
+                claims: new List<Claim> { new(ClaimTypes.Name, user.UserName) }
                 );
 
-           
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new();
-            token.AccessToken = jwtSecurityTokenHandler.WriteToken(jwtSecurityToken);
-            _logger.LogInformation("############### TOKEN OLUŞTU ###############");
+            JwtSecurityTokenHandler tokenHandler = new();
+            token.AccessToken = tokenHandler.WriteToken(securityToken);
 
             token.RefreshToken = CreateRefreshToken();
             return token;

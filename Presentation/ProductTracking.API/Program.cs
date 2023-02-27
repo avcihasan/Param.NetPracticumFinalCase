@@ -25,7 +25,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new()
         {
             ValidateAudience = true,
-            ValidateIssuer = true,
+            ValidateIssuer = true, 
             ValidateLifetime = true, 
             ValidateIssuerSigningKey = true,
 
@@ -34,10 +34,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SigninKey"])),
             LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => expires != null ? expires > DateTime.Now : false,
 
-            NameClaimType =ClaimTypes.Name
+            NameClaimType = ClaimTypes.Name
         };
     });
-
 
 
 builder.Services.AddHttpLogging(logging =>

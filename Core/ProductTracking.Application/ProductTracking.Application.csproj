@@ -17,8 +17,4 @@
     <ProjectReference Include="..\ProductTracking.Domain\ProductTracking.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Commands\ProductCommands\" />
-  </ItemGroup>
-
 </Project>

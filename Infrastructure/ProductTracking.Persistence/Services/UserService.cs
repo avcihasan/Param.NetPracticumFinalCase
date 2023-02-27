@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.UserDTOs;
 using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
+using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -17,11 +20,25 @@ namespace ProductTracking.Persistence.Services
     {
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
-
-        public UserService(IMapper mapper, UserManager<AppUser> userManager)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserService(IMapper mapper, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        public async Task<AppUser> GetOnlineUserAsync()
+        {
+            var username = _httpContextAccessor.HttpContext.User.Identity.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                AppUser user = await _userManager.Users
+                         .FirstOrDefaultAsync(u => u.UserName == username);
+                return user;
+            }
+            else
+                throw new Exception("Kullanıcı bulunamadı!");
         }
 
         public async Task<CreateUserResponseDto> RegisterUser(CreateUserDto userDto)

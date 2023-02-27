@@ -12,8 +12,8 @@ using ProductTracking.Persistence.Contexts;
 namespace ProductTracking.Persistence.Migrations
 {
     [DbContext(typeof(ProductTrackingDbContext))]
-    [Migration("20230226203106_mig2")]
-    partial class mig2
+    [Migration("20230227194533_mig1")]
+    partial class mig1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -140,7 +140,7 @@ namespace ProductTracking.Persistence.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CratedDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
@@ -164,7 +164,7 @@ namespace ProductTracking.Persistence.Migrations
                     b.Property<Guid>("BasketId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CratedDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("ProductId")
@@ -188,7 +188,7 @@ namespace ProductTracking.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CratedDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
@@ -312,7 +312,7 @@ namespace ProductTracking.Persistence.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CratedDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")

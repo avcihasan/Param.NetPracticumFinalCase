@@ -8,6 +8,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ProductTracking.Application.Features.Commands.ProductCommands.CreateProduct;
+using ProductTracking.Domain.Entities;
+using ProductTracking.Application.Features.Commands.ProductCommands.UpdateProduct;
+using ProductTracking.Application.Features.Queries.ProductQueries.GetAllProducts;
+using ProductTracking.Application.Features.Queries.ProductQueries.GetByIdProduct;
+using ProductTracking.Application.Features.Commands.CategoryCommands.CreateCategory;
+using ProductTracking.Application.Features.Queries.CategoryQueries.GetAllCategories;
+using ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCategory;
+using ProductTracking.Application.Features.Commands.CategoryCommands.UpdateCategory;
 
 namespace ProductTracking.Application.Mapping
 {
@@ -19,7 +28,18 @@ namespace ProductTracking.Application.Mapping
             CreateMap<CreateUserDto, AppUser>(); 
             CreateMap<CreateUserCommandRequest, CreateUserDto>();
             CreateMap<CreateUserResponseDto, CreateUserCommandResponse>();
-            CreateMap<LoginUserCommandRequest, LoginUserDto>();
+            CreateMap<LoginUserCommandRequest, LoginUserDto>(); 
+
+            CreateMap<CreateProductCommandRequest, Product>(); 
+            CreateMap<UpdateProductCommandRequest, Product>();
+            CreateMap<Product, GetAllProductsQueryResponse>();
+            CreateMap<Product, GetByIdProductQueryResponse>();
+
+            CreateMap<CreateCategoryCommandRequest, Category>();
+            CreateMap<Category, GetAllCategoriesQueryResponse>();
+            CreateMap<Category, GetByIdCategoryQueryResponse>(); 
+            CreateMap<UpdateCategoryCommandRequest, Category>(); 
+
         }
     }
 }

@@ -12,5 +12,6 @@ namespace ProductTracking.Application.Abstractions.Services
     {
         Task<CreateUserResponseDto> RegisterUser(CreateUserDto user);
         Task UpdateRefreshToken(string refreshToken, AppUser user, DateTime accessTokenDate, int addOnAccessTokenDate);
+        Task<AppUser> GetOnlineUserAsync();
     }
 }
