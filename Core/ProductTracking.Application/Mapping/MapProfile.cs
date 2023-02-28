@@ -17,6 +17,9 @@ using ProductTracking.Application.Features.Commands.CategoryCommands.CreateCateg
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetAllCategories;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCategory;
 using ProductTracking.Application.Features.Commands.CategoryCommands.UpdateCategory;
+using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
+using ProductTracking.Application.DTOs.BasketItemDTOs;
+using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
 
 namespace ProductTracking.Application.Mapping
 {
@@ -39,6 +42,9 @@ namespace ProductTracking.Application.Mapping
             CreateMap<Category, GetAllCategoriesQueryResponse>();
             CreateMap<Category, GetByIdCategoryQueryResponse>(); 
             CreateMap<UpdateCategoryCommandRequest, Category>(); 
+
+            CreateMap<UpdateBasketItemQuantityCommandRequest, UpdateBasketItemDto>(); 
+            CreateMap<BasketItem, GetBasketItemsQueryResponse>();
 
         }
     }

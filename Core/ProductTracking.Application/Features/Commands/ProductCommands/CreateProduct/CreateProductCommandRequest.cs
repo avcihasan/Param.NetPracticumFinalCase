@@ -10,7 +10,6 @@ namespace ProductTracking.Application.Features.Commands.ProductCommands.CreatePr
 {
     public class CreateProductCommandRequest:IRequest<CreateProductCommandResponse>
     {
-        public DateTime CratedDate { get; set; }
         public string Name { get; set; }
         public decimal UnitPrice { get; set; }
         public Guid CategoryId { get; set; }

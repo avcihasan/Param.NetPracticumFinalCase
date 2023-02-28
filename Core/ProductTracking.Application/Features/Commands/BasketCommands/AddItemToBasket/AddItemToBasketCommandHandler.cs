@@ -21,7 +21,7 @@ namespace ProductTracking.Application.Features.Commands.BasketCommands.AddItemTo
         {
             await _basketService.AddItemToBasketAsync(new()
             {
-                ProductId = request.ProductId,
+                ProductId = request.ProductId.ToString(),
                 Quantity = request.Quantity
             });
 

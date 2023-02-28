@@ -9,7 +9,7 @@ namespace ProductTracking.Application.Features.Commands.BasketCommands.AddItemTo
 {
     public class AddItemToBasketCommandRequest:IRequest<AddItemToBasketCommandResponse>
     {
-        public string ProductId { get; set; }
+        public Guid ProductId { get; set; }
         public int Quantity { get; set; }
     }
 }

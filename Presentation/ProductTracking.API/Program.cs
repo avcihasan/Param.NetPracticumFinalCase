@@ -1,9 +1,13 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.IdentityModel.Tokens;
 using ProductTracking.API.Extensions;
 using ProductTracking.Application;
+using ProductTracking.Application.Validators.BasketValidators;
 using ProductTracking.Infrastructure;
+using ProductTracking.Infrastructure.Filters;
 using ProductTracking.Persistence;
 using Serilog;
 using Serilog.Core;
@@ -14,7 +18,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>())
+    .ConfigureApiBehaviorOptions(options=>options.SuppressModelStateInvalidFilter=true);
+
+builder.Services.AddFluentValidationAutoValidation()
+    .AddFluentValidationClientsideAdapters()
+    .AddValidatorsFromAssembly(typeof(AddItemToBasketValidator).Assembly);
+
 
 builder.Services.AddPersistenceServices();
 builder.Services.AddApplicationServices();

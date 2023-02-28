@@ -85,7 +85,7 @@ namespace ProductTracking.Persistence.Services
             foreach (Basket basket in baskets)
                 foreach (BasketItem baksetItem in basket.BasketItems)
                     basketItems.Add(baksetItem);
-            
+            var xcxxxxxx = basketItems;
             return basketItems;
         }
 

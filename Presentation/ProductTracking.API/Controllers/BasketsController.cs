@@ -3,13 +3,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.DTOs.ResponseDTOs;
 using ProductTracking.Application.Features.Commands.BasketCommands.AddItemToBasket;
+using ProductTracking.Application.Features.Commands.BasketCommands.RemoveBasketItem;
+using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
+using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
 
 namespace ProductTracking.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BasketsController : ControllerBase
+    [Authorize(AuthenticationSchemes = "Admin")]
+    public class BasketsController : CustomBaseController
     {
         private readonly IMediator _mediator;
         readonly IBasketService _service;
@@ -20,24 +23,28 @@ namespace ProductTracking.API.Controllers
             _service = service;
         }
 
-        [Authorize(AuthenticationSchemes = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddItemToBasket(AddItemToBasketCommandRequest addItemToBasketCommandRequest)
         {
-            var x=HttpContext.User.Identity.Name;
-
-            AddItemToBasketCommandResponse response = await _mediator.Send(addItemToBasketCommandRequest);
-            return Ok(response);
+            return CreateActionResult(CustomResponseDto<AddItemToBasketCommandResponse>.Success(await _mediator.Send(addItemToBasketCommandRequest), 200));
         }
 
-
-
-        [Authorize(AuthenticationSchemes = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> get()
+        public async Task<IActionResult> GetBasketItems([FromQuery] GetBasketItemsQueryRequest getBasketItemsQueryRequest)
         {
-            var x = await _service.GetBasketItemsAsync();
-            return Ok(x) ;
+            return CreateActionResult(CustomResponseDto<List<GetBasketItemsQueryResponse>>.Success(await _mediator.Send(getBasketItemsQueryRequest), 200));
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateBasketItemQuantity(UpdateBasketItemQuantityCommandRequest updateBasketItemQuantityQueryRequest)
+        {
+            await _mediator.Send(updateBasketItemQuantityQueryRequest);
+            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
+        [HttpDelete("{BasketItemId}")]
+        public async Task<IActionResult> RemoveBasketItem([FromRoute] RemoveBasketItemCommandRequest removeBasketItemCommandRequest)
+        {
+            await _mediator.Send(removeBasketItemCommandRequest);
+            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
     }
 }
