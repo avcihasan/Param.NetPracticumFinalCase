@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ProductTracking.Application.Abstractions.Basket;
 using ProductTracking.Application.DTOs.ResponseDTOs;
 using ProductTracking.Application.Features.Commands.BasketCommands.AddItemToBasket;
 using ProductTracking.Application.Features.Commands.BasketCommands.RemoveBasketItem;
@@ -15,12 +13,11 @@ namespace ProductTracking.API.Controllers
     public class BasketsController : CustomBaseController
     {
         private readonly IMediator _mediator;
-        readonly IBasketService _service;
+        
 
-        public BasketsController(IMediator mediator, IBasketService service)
+        public BasketsController(IMediator mediator)
         {
             _mediator = mediator;
-            _service = service;
         }
 
         [HttpPost]

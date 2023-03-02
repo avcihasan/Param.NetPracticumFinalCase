@@ -20,16 +20,13 @@ namespace ProductTracking.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginUserCommandRequest loginUserCommandRequest)
         {
-            LoginUserCommandResponse response = await _mediator.Send(loginUserCommandRequest);
-
-            return CreateActionResult(CustomResponseDto<LoginUserCommandResponse>.Success(response, 200));
+            return CreateActionResult(CustomResponseDto<LoginUserCommandResponse>.Success(await _mediator.Send(loginUserCommandRequest), 200));
         }
 
         [HttpPost("[action]")]
         public async Task<IActionResult> RefreshTokenLogin([FromBody] RefreshTokenLoginUserCommandRequest refreshTokenLoginUserCommandRequest)
         {
-            RefreshTokenLoginUserCommandResponse response = await _mediator.Send(refreshTokenLoginUserCommandRequest);
-            return Ok(response);
+            return CreateActionResult(CustomResponseDto<RefreshTokenLoginUserCommandResponse>.Success(await _mediator.Send(refreshTokenLoginUserCommandRequest), 200));
         }
     }
 }
