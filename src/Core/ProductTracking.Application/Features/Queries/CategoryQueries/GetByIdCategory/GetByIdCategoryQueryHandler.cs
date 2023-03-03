@@ -17,7 +17,9 @@ namespace ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCa
 
         public async Task<GetByIdCategoryQueryResponse> Handle(GetByIdCategoryQueryRequest request, CancellationToken cancellationToken)
         {
-            return _mapper.Map<GetByIdCategoryQueryResponse>(await _unitOfWork.CategoryRepository.GetByIdAsync(request.CategoryId.ToString()));
+            var xxX = await _unitOfWork.CategoryRepository.GetByIdAsync(request.CategoryId.ToString());
+
+            return _mapper.Map<GetByIdCategoryQueryResponse>(xxX);
         }
 
     }

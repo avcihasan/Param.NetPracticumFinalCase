@@ -20,10 +20,9 @@ namespace ProductTracking.Application.Features.Commands.UserCommands.RefreshToke
 
         public async Task<RefreshTokenLoginUserCommandResponse> Handle(RefreshTokenLoginUserCommandRequest request, CancellationToken cancellationToken)
         {
-            TokenDto token = await _authService.RefreshTokenLoginUserAsync(request.RefreshToken);
             return new()
             {
-                Token = token
+                Token = await _authService.RefreshTokenLoginUserAsync(request.RefreshToken)
             };
         }
     }

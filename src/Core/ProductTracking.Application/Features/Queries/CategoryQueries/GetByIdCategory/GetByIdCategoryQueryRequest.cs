@@ -9,6 +9,6 @@ namespace ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCa
 {
     public class GetByIdCategoryQueryRequest:IRequest<GetByIdCategoryQueryResponse>
     {
-        public string CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
     }
 }

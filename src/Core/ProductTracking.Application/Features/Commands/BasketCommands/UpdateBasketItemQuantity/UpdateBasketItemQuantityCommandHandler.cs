@@ -23,7 +23,8 @@ namespace ProductTracking.Application.Features.Commands.BasketCommands.UpdateBas
 
         public async Task<UpdateBasketItemQuantityCommandResponse> Handle(UpdateBasketItemQuantityCommandRequest request, CancellationToken cancellationToken)
         {
-           await _basketService.UpdateQuantityAsync(_mapper.Map<UpdateBasketItemDto>(request));
+
+            await _basketService.UpdateQuantityAsync(_mapper.Map<UpdateBasketItemDto>(request));
             return new();
         }
     }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProductTracking.Application.Abstractions.Token;
 using ProductTracking.Application.DTOs.TokenDTOs;
@@ -14,12 +13,10 @@ namespace ProductTracking.Infrastructure.Services.Token
     public class TokenHandler : ITokenHandler
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<TokenHandler> _logger;
 
-        public TokenHandler(IConfiguration configuration, ILogger<TokenHandler> logger)
+        public TokenHandler(IConfiguration configuration)
         {
             _configuration = configuration;
-            _logger = logger;
         }
 
         public TokenDto CreateAccessToken(int second,AppUser user)
