@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Moq;
 using ProductTracking.Application.DTOs.TokenDTOs;
-using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Infrastructure.Services.Token;
 using Xunit;
