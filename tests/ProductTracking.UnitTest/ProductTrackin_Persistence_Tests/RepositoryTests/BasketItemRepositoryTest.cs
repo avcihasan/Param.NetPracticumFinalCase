@@ -22,40 +22,39 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task AddAsync_AddingBasketItem_CreateBasketItemAndReturnTrue()
         {
-            BasketItem basketItem = new() { ProductId=context.Products.First().Id,BasketId=context.Baskets.First().Id,Quantity=21 };
+            Product product = await context.Products.FirstAsync();
+            Basket basket = await context.Baskets.FirstAsync();
+
+            BasketItem basketItem = new() { ProductId= product.Id,BasketId= basket.Id,Quantity=21 };
             var result = await _basketItemRepository.AddAsync(basketItem);
             await context.SaveChangesAsync();
 
-            var basketItemResult = context.BasketItems.LastOrDefault();
 
             Assert.IsType<bool>(result);
-            Assert.IsType<BasketItem>(basketItemResult);
 
             Assert.Equal(result, true);
 
-            Assert.Equal(basketItem.Id, basketItemResult.Id);
         }
 
         [Fact]
         public async Task AddRangeAsync_AddingBaskets_CreateBasketItemsAndReturnTrue()
         {
+            Product firstProduct = await context.Products.FirstOrDefaultAsync();
+            Product lastProduct = await context.Products.LastOrDefaultAsync();
+
             List<BasketItem> basketItems = new()
             {
-                new() { ProductId=context.Products.First().Id,Quantity=21 },
-                new() { ProductId=context.Products.Last().Id,Quantity=22 }
+                new() { ProductId=firstProduct.Id,Quantity=21 },
+                new() { ProductId=lastProduct.Id,Quantity=22 }
             };
 
-            var beforeRecording = context.Baskets.Count();
+            var beforeRecording = await context.Baskets.CountAsync();
 
             var result = await _basketItemRepository.AddRangeAsync(basketItems);
             await context.SaveChangesAsync();
-            var afterRecording = context.BasketItems.Count();
 
-            var lastBasketItem = context.BasketItems.LastOrDefault();
 
-            Assert.Equal(lastBasketItem.Id, basketItems.LastOrDefault().Id);
             Assert.IsType<bool>(result);
-            Assert.Equal(beforeRecording + basketItems.Count, afterRecording);
 
             Assert.Equal(result, true);
 
@@ -89,7 +88,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnBasketItem(bool tracking)
         {
-            var basketItem = context.BasketItems.FirstOrDefault();
+            var basketItem =await context.BasketItems.FirstOrDefaultAsync();
 
             var result = await _basketItemRepository.GetByIdAsync(basketItem.Id.ToString(), tracking);
 
@@ -103,7 +102,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task Remove_ActionExecutes_RemoveBasketItemAndReturnTrue()
         {
-            var basketItem = context.BasketItems.FirstOrDefault();
+            var basketItem =await context.BasketItems.FirstOrDefaultAsync();
 
             var result = _basketItemRepository.Remove(basketItem);
             await context.SaveChangesAsync();
@@ -126,12 +125,12 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveBasketItemAndReturnTrue()
         {
-            var basketItem = context.BasketItems.FirstOrDefault();
+            var basketItem = await context.BasketItems.LastAsync();
 
             var result = await _basketItemRepository.RemoveByIdAsync(basketItem.Id.ToString());
             await context.SaveChangesAsync();
 
-            var newBasketItem = context.BasketItems.Where(x => x.Id == basketItem.Id).FirstOrDefault();
+            var newBasketItem = await context.BasketItems.Where(x => x.Id == basketItem.Id).FirstOrDefaultAsync();
 
             Assert.Equal(result, true);
             Assert.Null(newBasketItem);

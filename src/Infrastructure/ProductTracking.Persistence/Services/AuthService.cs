@@ -39,6 +39,7 @@ namespace ProductTracking.Persistence.Services
                 throw new Exception("Kullanıcı Kaytılı Değil!");
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(user, userDto.Password, false);
 
+
             if (result.Succeeded)
             {
                 TokenDto token = _tokenHandler.CreateAccessToken(100,user);

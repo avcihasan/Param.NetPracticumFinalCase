@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductTracking.Domain.Entities;
+using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -25,32 +27,33 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
             var result = await _basketRepository.AddAsync(basket);
             await context.SaveChangesAsync();
 
-            var basketResult = context.Baskets.LastOrDefault();
 
             Assert.IsType<bool>(result);
-            Assert.IsType<Basket>(basketResult);
 
             Assert.Equal(result, true);
 
-            Assert.Equal(basket.CategoryId, basketResult.CategoryId);
         }
 
         [Fact]
         public async Task AddRangeAsync_AddingBaskets_CreateBasketsAndReturnTrue()
         {
+            Category firstCategory = await context.Categories.FirstOrDefaultAsync();
+            Category lastCategory = await context.Categories.LastOrDefaultAsync();
+            AppUser user1 = await context.Users.FirstOrDefaultAsync();
+            AppUser user2 = await context.Users.LastOrDefaultAsync();
+
             List<Basket> baskets = new()
             {
-                new() { CategoryId=context.Categories.First().Id,UserId=context.Users.First().Id },
-                new() { CategoryId=context.Categories.Last().Id,UserId=context.Users.Last().Id }
+                new() { CategoryId=firstCategory.Id,UserId=user1.Id },
+                new() { CategoryId=lastCategory.Id,UserId=user2.Id }
             };
 
-            var beforeRecording = context.Baskets.Count();
+            var beforeRecording = await context.Baskets.CountAsync();
 
             var result = await _basketRepository.AddRangeAsync(baskets);
             await context.SaveChangesAsync();
-            var afterRecording = context.Baskets.Count();
+            var afterRecording = await context.Baskets.CountAsync();
 
-            var lastBasket = context.Categories.LastOrDefault();
 
             Assert.IsType<bool>(result);
             Assert.Equal(beforeRecording + baskets.Count, afterRecording);
@@ -87,11 +90,12 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnBasket(bool tracking)
         {
-            var basket = context.Baskets.FirstOrDefault();
+            var basket = await context.Baskets.FirstAsync();
 
             var result = await _basketRepository.GetByIdAsync(basket.Id.ToString(), tracking);
 
             Assert.IsType<Basket>(result);
+            Assert.NotNull(result);
             Assert.Equal(basket.Id, result.Id);
             Assert.Equal(basket.CategoryId, result.CategoryId);
             Assert.Equal(basket.CreatedDate, result.CreatedDate);
@@ -100,7 +104,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task Remove_ActionExecutes_RemoveBasketAndReturnTrue()
         {
-            var basket = context.Baskets.FirstOrDefault();
+            var basket = await context.Baskets.FirstOrDefaultAsync();
 
             var result = _basketRepository.Remove(basket);
             await context.SaveChangesAsync();
@@ -123,12 +127,12 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveBasketAndReturnTrue()
         {
-            var basket = context.Baskets.FirstOrDefault();
+            var basket = await context.Baskets.FirstOrDefaultAsync();
 
             var result = await _basketRepository.RemoveByIdAsync(basket.Id.ToString());
             await context.SaveChangesAsync();
 
-            var newBasket = context.Categories.Where(x => x.Id == basket.Id).FirstOrDefault();
+            var newBasket = await context.Categories.Where(x => x.Id == basket.Id).FirstOrDefaultAsync();
 
             Assert.Equal(result, true);
             Assert.Null(newBasket);

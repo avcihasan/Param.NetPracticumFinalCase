@@ -1,18 +1,10 @@
 ﻿using AutoMapper;
-using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.UserDTOs;
-using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
-using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductTracking.Persistence.Services
 {
@@ -51,8 +43,10 @@ namespace ProductTracking.Persistence.Services
 
             if (result.Succeeded)
                 response.Message = ("Kayıt Başarılı");
-            foreach (IdentityError error in result.Errors)
-                response.Message = (error.Description);
+            else
+                foreach (IdentityError error in result.Errors)
+                    response.Message = (error.Description);
+
             return response;
         }
 

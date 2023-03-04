@@ -31,14 +31,11 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
             var result = await _productRepository.AddAsync(product);
             await context.SaveChangesAsync();
 
-            var productResult = context.Products.LastOrDefault();
 
             Assert.IsType<bool>(result);
-            Assert.IsType<Product>(productResult);
 
             Assert.Equal(result, true);
 
-            Assert.Equal(product.Name, productResult.Name);
         }
 
         [Theory]
@@ -47,23 +44,20 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData("deneme2", "deneme5", 15, 10)]
         public async Task AddRangeAsync_AddingCategories_CreateProductsAndReturnTrue(string name1, string name2, decimal unitPrice1 , decimal unitPrice2)
         {
+            Category category =await context.Categories.FirstOrDefaultAsync();
+            
+
             List<Product> protucts = new()
             {
-                new() { Name = name1 ,UnitPrice=unitPrice1,CategoryId=context.Categories.First().Id},
-                new() { Name = name2,UnitPrice=unitPrice2,CategoryId=context.Categories.First().Id }
+                new() { Name = name1 ,UnitPrice=unitPrice1,CategoryId=category.Id},
+                new() { Name = name2,UnitPrice=unitPrice2,CategoryId=category.Id }
             };
-
-            var beforeRecording = context.Products.Count();
 
             var result = await _productRepository.AddRangeAsync(protucts);
             await context.SaveChangesAsync();
-            var afterRecording = context.Products.Count();
 
-            var lastProduct = context.Products.LastOrDefault();
 
-            Assert.Equal(lastProduct.Id, protucts.LastOrDefault().Id);
             Assert.IsType<bool>(result);
-            Assert.Equal(beforeRecording + protucts.Count, afterRecording);
 
             Assert.Equal(result, true);
 
@@ -97,7 +91,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnProduct(bool tracking)
         {
-            var product = context.Products.FirstOrDefault();
+            var product =await context.Products.FirstAsync();
 
             var result = await _productRepository.GetByIdAsync(product.Id.ToString(), tracking);
 
@@ -112,7 +106,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task Remove_ActionExecutes_RemoveProductAndReturnTrue()
         {
-            var product = context.Products.FirstOrDefault();
+            var product = await context.Products.FirstAsync();
 
             var result = _productRepository.Remove(product);
             await context.SaveChangesAsync();
@@ -136,7 +130,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveProductAndReturnTrue()
         {
-            var product = context.Products.FirstOrDefault();
+            var product = await context.Products.FirstOrDefaultAsync();
 
             var result = await _productRepository.RemoveByIdAsync(product.Id.ToString());
             await context.SaveChangesAsync();

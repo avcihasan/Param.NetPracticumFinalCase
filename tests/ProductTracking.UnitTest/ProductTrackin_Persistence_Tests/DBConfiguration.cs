@@ -30,17 +30,30 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests
                 context.Database.EnsureCreated();
                 context.Categories.AddRange(
                     new Category { Name = "Kategori 1", CreatedDate = DateTime.Now },
-                    new Category { Name = "Kategori 2", CreatedDate = DateTime.Now });
+                    new Category { Name = "Kategori 2", CreatedDate = DateTime.Now },
+                     new Category { Name = "Kategori 3", CreatedDate = DateTime.Now },
+                      new Category { Name = "Kategori 4", CreatedDate = DateTime.Now },
+                      new Category { Name = "Kategori 5", CreatedDate = DateTime.Now });
 
                 context.Products.AddRange(
                     new Product { Name = "Ürün 1", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 10 },
-                    new Product { Name = "Ürün 2", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 20 });
+                    new Product { Name = "Ürün 2", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 10 },
+                    new Product { Name = "Ürün 3", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 10 },
+                    new Product { Name = "Ürün 4", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 10 },
+                    new Product { Name = "Ürün 5", CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UnitPrice = 10 }
+                    );
 
                 context.BasketItems.AddRange(
                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 10 },
-                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 50 });
+                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 10 },
+                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 10 },
+                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 10 },
+                     new BasketItem { BasketId = Guid.NewGuid(), CreatedDate = DateTime.Now, ProductId = Guid.NewGuid(), Quantity = 10 });
 
                 context.Baskets.AddRange(
+                    new Basket { CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UserId = Guid.NewGuid().ToString() },
+                    new Basket { CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UserId = Guid.NewGuid().ToString() },
+                    new Basket { CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UserId = Guid.NewGuid().ToString() },
                     new Basket { CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UserId = Guid.NewGuid().ToString() },
                     new Basket { CategoryId = Guid.NewGuid(), CreatedDate = DateTime.Now, UserId = Guid.NewGuid().ToString() });
 

@@ -27,8 +27,4 @@
     <ProjectReference Include="..\..\src\Presentation\ProductTracking.API\ProductTracking.API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ProductTrackin_Persistence_Tests\ServiceTests\" />
-  </ItemGroup>
-
 </Project>

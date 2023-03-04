@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Basket;
 using ProductTracking.Application.Abstractions.Services;
@@ -7,7 +6,6 @@ using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
-using System.Collections.Generic;
 
 namespace ProductTracking.Persistence.Services
 {
@@ -24,7 +22,7 @@ namespace ProductTracking.Persistence.Services
             _userService = userService;
         }
 
-        private async Task<Basket> ContextUser(string categoryId)
+        public async Task<Basket> ContextUser(string categoryId)
         {
             AppUser getUser = await _userService.GetOnlineUserAsync();
           
@@ -50,8 +48,6 @@ namespace ProductTracking.Persistence.Services
             throw new Exception("Beklenmeyen bir hatayla karşılaşıldı...");
         }
 
-
-       
         public async Task AddItemToBasketAsync(CreateBasketItemDto basketItem)
         {
             Product p = await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId);
@@ -85,7 +81,7 @@ namespace ProductTracking.Persistence.Services
             foreach (Basket basket in baskets)
                 foreach (BasketItem baksetItem in basket.BasketItems)
                     basketItems.Add(baksetItem);
-            var xcxxxxxx = basketItems;
+          
             return basketItems;
         }
 
@@ -97,6 +93,8 @@ namespace ProductTracking.Persistence.Services
                 _unitOfWork.BasketItemRepository.Remove(basketItem);
                 await _unitOfWork.CommitAsync();
             }
+            else
+                throw new Exception("BasketItem Bulunamadı!");
         }
 
         public async Task UpdateQuantityAsync(UpdateBasketItemDto basketItem)
@@ -107,6 +105,8 @@ namespace ProductTracking.Persistence.Services
                 _basketItem.Quantity = basketItem.Quantity;
                 await _unitOfWork.CommitAsync();
             }
+            else
+                throw new Exception("BasketItem Bulunamadı!");
         }
     }
 }

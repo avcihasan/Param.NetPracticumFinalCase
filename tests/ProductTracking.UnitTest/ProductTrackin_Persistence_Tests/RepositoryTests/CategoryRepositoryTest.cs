@@ -94,7 +94,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnCategory(bool tracking)
         {
-            var category = context.Categories.FirstOrDefault();
+            var category = await context.Categories.FirstOrDefaultAsync();
 
             var result = await _categoryRepository.GetByIdAsync(category.Id.ToString(), tracking);
 
@@ -107,7 +107,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task Remove_ActionExecutes_RemoveCategoryAndReturnTrue()
         {
-            var category = context.Categories.FirstOrDefault();
+            var category =await context.Categories.FirstOrDefaultAsync();
 
             var result = _categoryRepository.Remove(category);
             await context.SaveChangesAsync();
@@ -130,12 +130,12 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveCategoryAndReturnTrue()
         {
-            var category = context.Categories.FirstOrDefault();
+            var category = await context.Categories.FirstOrDefaultAsync();
 
             var result = await _categoryRepository.RemoveByIdAsync(category.Id.ToString());
             await context.SaveChangesAsync();
 
-            var newCategory = context.Categories.Where(x => x.Id == category.Id).FirstOrDefault();
+            var newCategory = await context.Categories.Where(x => x.Id == category.Id).FirstOrDefaultAsync();
 
             Assert.Equal(result, true);
             Assert.Null(newCategory);
