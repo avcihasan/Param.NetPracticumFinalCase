@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
+using ProductTracking.Domain.Entities.MongoDbEntities;
 
 namespace ProductTracking.Persistence.Services
 {
@@ -14,18 +18,23 @@ namespace ProductTracking.Persistence.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
+        private readonly IMongoDbService _mongoDbService;
+        private readonly IMapper _mapper;
 
-        public BasketService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IUserService userService)
+        public BasketService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IUserService userService, IMongoDbService mongoDbService, IMapper mapper)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _userService = userService;
+
+            _mongoDbService = mongoDbService;
+            _mapper = mapper;
         }
 
         public async Task<Basket> ContextUser(string categoryId)
         {
             AppUser getUser = await _userService.GetOnlineUserAsync();
-          
+
             if (getUser != null)
             {
                 AppUser user = await _userManager.Users
@@ -33,12 +42,12 @@ namespace ProductTracking.Persistence.Services
                          .FirstOrDefaultAsync(u => u.UserName == getUser.UserName);
 
                 Basket targetBasket = null;
-                if (user.Baskets.Any(x => x.CategoryId.ToString() == categoryId))
+                if (user.Baskets.Any(x => x.CategoryId.ToString() == categoryId && x.IsComplete==false))
                     targetBasket = user.Baskets.FirstOrDefault(x => x.CategoryId.ToString() == categoryId);
                 else
                 {
-                    targetBasket = new();
-                    targetBasket.CategoryId = Guid.Parse(categoryId);
+                    Category category = await _unitOfWork.CategoryRepository.GetByIdAsync(categoryId);
+                    targetBasket = new() { CategoryId = Guid.Parse(categoryId), Name = $"{category.Name} Sepeti" };
                     user.Baskets.Add(targetBasket);
                     await _unitOfWork.CommitAsync();
                 }
@@ -52,20 +61,30 @@ namespace ProductTracking.Persistence.Services
         {
             Product p = await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId);
             Basket basket = await ContextUser(p.CategoryId.ToString());
+            Basket generalBasket = await _unitOfWork.BasketRepository.GetSingleAsync(x => x.CategoryId == null && x.UserId == basket.UserId);
             if (basket != null)
             {
-                BasketItem _basketItem = await _unitOfWork.BasketItemRepository.GetSingleAsync(bi => bi.BasketId == basket.Id && bi.ProductId == Guid.Parse(basketItem.ProductId));
+                BasketItem _basketItem = await _unitOfWork.BasketItemRepository.GetSingleAsync(x => x.BasketId == basket.Id && x.ProductId == Guid.Parse(basketItem.ProductId));
                 if (_basketItem != null)
-                    _basketItem.Quantity++;
+                    _basketItem.Quantity+= basketItem.Quantity;
                 else
+                {
                     await _unitOfWork.BasketItemRepository.AddAsync(new()
+                    {
+                        BasketId = generalBasket.Id,
+                        ProductId = Guid.Parse(basketItem.ProductId),
+                        Quantity = basketItem.Quantity
+                    });
+                      await _unitOfWork.BasketItemRepository.AddAsync(new()
                     {
                         BasketId = basket.Id,
                         ProductId = Guid.Parse(basketItem.ProductId),
                         Quantity = basketItem.Quantity
                     });
-
+                }
+                  
                 await _unitOfWork.CommitAsync();
+
             }
         }
 
@@ -81,7 +100,7 @@ namespace ProductTracking.Persistence.Services
             foreach (Basket basket in baskets)
                 foreach (BasketItem baksetItem in basket.BasketItems)
                     basketItems.Add(baksetItem);
-          
+
             return basketItems;
         }
 
@@ -107,6 +126,50 @@ namespace ProductTracking.Persistence.Services
             }
             else
                 throw new Exception("BasketItem Bulunamadı!");
+        }
+
+        public async Task<List<Basket>> SearchBasketAsync(string searchBasket)
+        {
+            searchBasket = searchBasket.ToLower();
+            AppUser user =await _userService.GetOnlineUserAsync();
+
+            //IQueryable<Basket> baskets=_unitOfWork.BasketRepository.GetAll().Include(x=>x.Category).Where(x=>x.UserId== user.Id);
+
+            IQueryable<Basket> baskets =_unitOfWork.BasketRepository.GetWhere(x => x.UserId == user.Id).Include(x => x.Category).Include(x=>x.BasketItems).ThenInclude(x=>x.Product);
+
+            List<Basket> returnBaskets = new();
+
+            foreach (Basket basket in baskets)
+            {
+                if (basket.Name.ToLower() == searchBasket)
+                    returnBaskets.Add(basket);
+                else if (basket.Category?.Name.ToLower() == searchBasket)
+                    returnBaskets.Add(basket);
+                else if (basket.CreatedDate.Year.ToString() == searchBasket)
+                    returnBaskets.Add(basket);
+                else if (basket.CompletedDate?.Year.ToString() == searchBasket)
+                    returnBaskets.Add(basket);
+            }
+
+            if (returnBaskets.Count == 0)
+                throw new Exception("Aranan Basket Bulunamadı");
+
+            return returnBaskets;
+        }
+
+        public async Task CompleteBasketAsync(Guid basketId)
+        {
+            Basket basket=await _unitOfWork.BasketRepository.GetBasketWithİtems(basketId.ToString());
+            basket.IsComplete= true;
+            await _unitOfWork.CommitAsync();
+            BasketMongoDb basketMongoDb = _mapper.Map<BasketMongoDb>(basket);
+            basketMongoDb.CategoryName = basket.Category.Name;
+
+            foreach (BasketItem basketItem in basket.BasketItems)
+                basketMongoDb.BasketItems.Add(new() { Quantity=basketItem.Quantity,ProductName=basketItem.Product.Name});
+            
+            basketMongoDb.Id = null;
+            await _mongoDbService.CreatAsync(basketMongoDb);
         }
     }
 }

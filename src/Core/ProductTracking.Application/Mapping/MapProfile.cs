@@ -1,25 +1,23 @@
 ﻿using AutoMapper;
+using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.DTOs.UserDTOs;
-using ProductTracking.Application.Features.Commands.UserCommands.LoginUser;
-using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
-using ProductTracking.Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProductTracking.Application.Features.Commands.ProductCommands.CreateProduct;
-using ProductTracking.Domain.Entities;
-using ProductTracking.Application.Features.Commands.ProductCommands.UpdateProduct;
-using ProductTracking.Application.Features.Queries.ProductQueries.GetAllProducts;
-using ProductTracking.Application.Features.Queries.ProductQueries.GetByIdProduct;
+using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
 using ProductTracking.Application.Features.Commands.CategoryCommands.CreateCategory;
+using ProductTracking.Application.Features.Commands.CategoryCommands.UpdateCategory;
+using ProductTracking.Application.Features.Commands.ProductCommands.CreateProduct;
+using ProductTracking.Application.Features.Commands.ProductCommands.UpdateProduct;
+using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
+using ProductTracking.Application.Features.Commands.UserCommands.LoginUser;
+using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Features.Queries.BasketQueries.SearchBasket;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetAllCategories;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCategory;
-using ProductTracking.Application.Features.Commands.CategoryCommands.UpdateCategory;
-using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
-using ProductTracking.Application.DTOs.BasketItemDTOs;
-using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Features.Queries.ProductQueries.GetAllProducts;
+using ProductTracking.Application.Features.Queries.ProductQueries.GetByIdProduct;
+using ProductTracking.Domain.Entities;
+using ProductTracking.Domain.Entities.Identity;
+using ProductTracking.Domain.Entities.MongoDbEntities;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ProductTracking.Application.Mapping
 {
@@ -31,7 +29,10 @@ namespace ProductTracking.Application.Mapping
             CreateMap<CreateUserDto, AppUser>(); 
             CreateMap<CreateUserCommandRequest, CreateUserDto>();
             CreateMap<CreateUserResponseDto, CreateUserCommandResponse>();
-            CreateMap<LoginUserCommandRequest, LoginUserDto>(); 
+            CreateMap<LoginUserCommandRequest, LoginUserDto>();
+            CreateMap<AppUser, UserMongoDb>();
+
+            
 
             CreateMap<CreateProductCommandRequest, Product>(); 
             CreateMap<UpdateProductCommandRequest, Product>();
@@ -45,6 +46,9 @@ namespace ProductTracking.Application.Mapping
 
             CreateMap<UpdateBasketItemQuantityCommandRequest, UpdateBasketItemDto>(); 
             CreateMap<BasketItem, GetBasketItemsQueryResponse>();
+
+            CreateMap<Basket, SearchBasketQueryResponse>();
+            CreateMap<Basket, BasketMongoDb>();
 
         }
     }

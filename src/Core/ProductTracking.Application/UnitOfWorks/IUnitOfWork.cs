@@ -13,7 +13,7 @@ namespace ProductTracking.Application.UnitOfWorks
     {
         IGenericRepository<Product> ProductRepository { get; }
         IGenericRepository<Category> CategoryRepository { get; }
-        IGenericRepository<Basket> BasketRepository { get; }
+        IBasketRepository BasketRepository { get; }
         IGenericRepository<BasketItem> BasketItemRepository { get; }
         Task CommitAsync();
 

@@ -14,6 +14,8 @@ namespace ProductTracking.Application.Abstractions.Basket
         public Task AddItemToBasketAsync(CreateBasketItemDto basketItem);
         public Task UpdateQuantityAsync(UpdateBasketItemDto basketItem);
         public Task RemoveBasketItemAsync(string basketItemId);
+        public Task<List<ProductTracking.Domain.Entities.Basket>> SearchBasketAsync(string searchBasket);
+        public Task CompleteBasketAsync(Guid basketId);
 
     }
 }

@@ -1,18 +1,23 @@
-﻿using ProductTracking.Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using ProductTracking.Domain.Entities.Identity;
 
 namespace ProductTracking.Domain.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Basket:BaseEntity
     {
+
+        public string Name { get; set; }
+#nullable enable
+        public string? Description { get; set; }
+#nullable disable
+        public DateTime? CompletedDate { get; set; }
+        public bool IsComplete { get; set; } = false;
+
         public string UserId { get; set; }
         public AppUser User { get; set; }
 
-        public Guid CategoryId { get; set; }
+        public Guid? CategoryId { get; set; }
         public Category Category { get; set; }
 
         public ICollection<BasketItem> BasketItems { get; set; }

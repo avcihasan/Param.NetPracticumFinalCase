@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using ProductTracking.Application.DTOs.UserDTOs;
 using ProductTracking.Application.Mapping;
+using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Persistence.Services;
 using System;
@@ -20,6 +21,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
     {
         private readonly IMapper _mapper;
         private readonly Mock<UserManager<AppUser>> _mockUserManager;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
         private readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor;
         private readonly UserService _userService;
 
@@ -34,8 +36,9 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUserManager = new Mock<UserManager<AppUser>>(new Mock<IUserStore<AppUser>>().Object, null, null, null, null, null, null, null, null);
             _mockUserManager.Object.UserValidators.Add(new UserValidator<AppUser>());
             _mockUserManager.Object.PasswordValidators.Add(new PasswordValidator<AppUser>());
-            _userService = new UserService(_mapper, _mockUserManager.Object, _mockHttpContextAccessor.Object);
+            _mockUnitOfWork = new Mock<IUnitOfWork>();
 
+            _userService = new UserService(_mapper, _mockUserManager.Object, _mockHttpContextAccessor.Object, _mockUnitOfWork.Object);
         }
 
 
@@ -47,7 +50,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
                 .Returns(userName);
 
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _userService.GetOnlineUserAsync());
-            Assert.Equal(ex.Message, "Kullanıcı bulunamadı!");
+            Assert.Equal("Kullanıcı bulunamadı!", ex.Message);
 
         }
 
@@ -83,9 +86,9 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             var result = await _userService.RegisterUser(userDto);
 
             Assert.IsType<CreateUserResponseDto>(result);
-            Assert.Equal(result.Message, "Kayıt Başarılı");
+            Assert.Equal("Kayıt Başarılı", result.Message);
             Assert.True(result.Succeeded);
-
+                
         }
 
 
@@ -100,7 +103,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             var result = await _userService.RegisterUser(userDto);
 
             Assert.IsType<CreateUserResponseDto>(result);
-            Assert.Equal(result.Message, "Unit Test Kullanıcı Kayıt Hatası!");
+            Assert.Equal( "Unit Test Kullanıcı Kayıt Hatası!", result.Message);
             Assert.False(result.Succeeded);
 
         }
@@ -113,7 +116,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
 
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _userService.UpdateRefreshToken("refreshToken", user, DateTime.Now, 1));
 
-            Assert.Equal(ex.Message, "Kullanıcı bulunamadı");
+            Assert.Equal( "Kullanıcı bulunamadı",ex.Message);
 
         }
 

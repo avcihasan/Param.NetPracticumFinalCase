@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities.Identity;
@@ -31,6 +32,7 @@ namespace ProductTracking.Persistence
             service.AddScoped<IBasketService, BasketService>();
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IAuthService, AuthService>();
+            service.AddScoped<IMongoDbService, MongoDbService>();
         }
     }
 }

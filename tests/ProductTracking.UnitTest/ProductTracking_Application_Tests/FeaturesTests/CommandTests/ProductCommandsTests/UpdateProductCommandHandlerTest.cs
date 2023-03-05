@@ -49,7 +49,7 @@ namespace ProductTracking.UnitTest.ProductTracking_Application_Tests.FeaturesTes
             _mock.Verify(x => x.ProductRepository.Update(It.IsAny<Product>()), Times.Once);
             _mock.Verify(x => x.CommitAsync(), Times.Never);
 
-            Assert.Equal<string>(ex.Message, "Hata var");
+            Assert.Equal("Hata var",ex.Message);
 
         }
 

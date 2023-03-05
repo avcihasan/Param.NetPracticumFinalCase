@@ -51,8 +51,8 @@ namespace ProductTracking.UnitTest.ProductTracking_Application_Tests.FeaturesTes
 
             _mock.Verify(x => x.CategoryRepository.AddAsync(It.IsAny<Category>()), Times.Once);
             _mock.Verify(x => x.CommitAsync(), Times.Never);
-            Assert.Equal<string>(ex.Message, "hata");
-
+            Assert.Equal("hata", ex.Message);
+                
 
         }
 

@@ -2,13 +2,18 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using ProductTracking.API.Extensions;
 using ProductTracking.Application;
+using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.Validators.BasketValidators;
 using ProductTracking.Infrastructure;
 using ProductTracking.Infrastructure.Filters;
 using ProductTracking.Persistence;
+using ProductTracking.Persistence.Contexts;
+using ProductTracking.Persistence.Services;
 using Serilog;
 using Serilog.Core;
 using System.Security.Claims;
@@ -16,6 +21,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDb"));
 
 
 builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>())

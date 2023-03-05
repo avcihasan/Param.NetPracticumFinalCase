@@ -1,11 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.DTOs.ResponseDTOs;
 using ProductTracking.Application.Features.Commands.BasketCommands.AddItemToBasket;
+using ProductTracking.Application.Features.Commands.BasketCommands.CompleteBasket;
 using ProductTracking.Application.Features.Commands.BasketCommands.RemoveBasketItem;
 using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
 using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Features.Queries.BasketQueries.SearchBasket;
+using ProductTracking.Domain.Entities;
 
 namespace ProductTracking.API.Controllers
 {
@@ -13,7 +17,6 @@ namespace ProductTracking.API.Controllers
     public class BasketsController : CustomBaseController
     {
         private readonly IMediator _mediator;
-        
 
         public BasketsController(IMediator mediator)
         {
@@ -41,6 +44,20 @@ namespace ProductTracking.API.Controllers
         public async Task<IActionResult> RemoveBasketItem([FromRoute] RemoveBasketItemCommandRequest removeBasketItemCommandRequest)
         {
             await _mediator.Send(removeBasketItemCommandRequest);
+            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> SearchBasket([FromBody] SearchBasketQueryRequest searchBasketQueryRequest)
+        {
+            return CreateActionResult(CustomResponseDto<List<SearchBasketQueryResponse>>.Success(await _mediator.Send(searchBasketQueryRequest), 200));
+        }
+
+
+        [HttpPut("[action]")]
+        public async Task<IActionResult> CompleteBasket([FromBody] CompleteBasketCommandRequest completeBasketCommandRequest)
+        {
+            await _mediator.Send(completeBasketCommandRequest);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
     }

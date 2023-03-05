@@ -9,5 +9,6 @@ namespace ProductTracking.Application.Repositories
 {
     public interface IBasketRepository:IGenericRepository<Basket>
     {
+        public Task<Basket> GetBasketWithİtems(string basketId,bool tracking=true);
     }
 }

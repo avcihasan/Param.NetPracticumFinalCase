@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using Moq;
 using ProductTracking.Application.Abstractions.Basket;
+using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
@@ -24,7 +26,10 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         private readonly Mock<UserManager<AppUser>> _mockUserManager;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
         private readonly Mock<IUserService> _mockUserService;
+        private readonly Mock<IMongoClient> _mongoClient;
+        private readonly Mock<IMongoDbSettings> _mongoDbSettings;
         private readonly BasketService _basketService;
+
 
         public BasketServiceTest()
         {
@@ -34,8 +39,10 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
 
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockUserService = new Mock<IUserService>();
+            _mongoClient = new Mock<IMongoClient>();
+            _mongoDbSettings = new Mock<IMongoDbSettings>();
 
-            _basketService = new BasketService(_mockUserManager.Object, _mockUnitOfWork.Object, _mockUserService.Object);
+            _basketService = new BasketService(_mockUserManager.Object, _mockUnitOfWork.Object, _mockUserService.Object,_mongoDbSettings.Object, _mongoClient.Object);
 
         }
 
@@ -52,7 +59,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUserService.Verify(x => x.GetOnlineUserAsync(), Times.Once);
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Never);
 
-            Assert.Equal<string>(ex.Message, "Beklenmeyen bir hatayla karşılaşıldı...");
+            Assert.Equal( "Beklenmeyen bir hatayla karşılaşıldı...", ex.Message);
 
         }
 
@@ -117,7 +124,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUnitOfWork.Verify(x => x.BasketItemRepository.Remove(It.IsAny<BasketItem>()), Times.Never);
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Never);
 
-            Assert.Equal<string>(ex.Message, "BasketItem Bulunamadı!");
+            Assert.Equal("BasketItem Bulunamadı!", ex.Message);
         }
 
 
@@ -172,7 +179,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUnitOfWork.Verify(x => x.BasketItemRepository.GetByIdAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Never);
 
-            Assert.Equal<string>(ex.Message, "BasketItem Bulunamadı!");
+            Assert.Equal("BasketItem Bulunamadı!", ex.Message);
         }
 
         [Fact]

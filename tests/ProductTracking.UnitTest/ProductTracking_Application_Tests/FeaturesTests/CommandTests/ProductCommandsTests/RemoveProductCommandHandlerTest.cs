@@ -39,7 +39,7 @@ namespace ProductTracking.UnitTest.ProductTracking_Application_Tests.FeaturesTes
             _mock.Verify(x => x.ProductRepository.RemoveByIdAsync(It.IsAny<string>()), Times.Once);
             _mock.Verify(x => x.CommitAsync(), Times.Never);
 
-            Assert.Equal<string>(ex.Message, "Hata!");
+            Assert.Equal("Hata!",ex.Message );
 
         }
 

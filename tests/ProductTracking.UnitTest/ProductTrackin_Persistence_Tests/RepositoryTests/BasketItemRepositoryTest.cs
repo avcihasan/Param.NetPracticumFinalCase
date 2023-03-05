@@ -32,7 +32,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
 
             Assert.IsType<bool>(result);
 
-            Assert.Equal(result, true);
+            Assert.True(result);
 
         }
 
@@ -56,7 +56,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
 
             Assert.IsType<bool>(result);
 
-            Assert.Equal(result, true);
+            Assert.True(result);
 
         }
 
@@ -79,7 +79,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         public async Task GetByIdAsync_InvalidId_ReturnException(bool tracking)
         {
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketItemRepository.GetByIdAsync(Guid.NewGuid().ToString(), tracking));
-            Assert.Equal<string>(ex.Message, "Entity Bulunamadı!");
+            Assert.Equal( "Entity Bulunamadı!", ex.Message);
 
         }
 
@@ -119,7 +119,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         {
 
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketItemRepository.RemoveByIdAsync(Guid.NewGuid().ToString()));
-            Assert.Equal<string>(ex.Message, "Entity Bulunamadı!");
+            Assert.Equal("Entity Bulunamadı!", ex.Message);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
 
             var newBasketItem = await context.BasketItems.Where(x => x.Id == basketItem.Id).FirstOrDefaultAsync();
 
-            Assert.Equal(result, true);
+            Assert.True(result);
             Assert.Null(newBasketItem);
         }
 

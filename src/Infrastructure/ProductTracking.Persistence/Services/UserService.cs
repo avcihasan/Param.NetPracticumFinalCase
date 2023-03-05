@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.UserDTOs;
+using ProductTracking.Application.UnitOfWorks;
+using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
 
 namespace ProductTracking.Persistence.Services
@@ -13,11 +15,14 @@ namespace ProductTracking.Persistence.Services
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserService(IMapper mapper, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public UserService(IMapper mapper, UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AppUser> GetOnlineUserAsync()
@@ -37,12 +42,20 @@ namespace ProductTracking.Persistence.Services
         {
             AppUser user = _mapper.Map<AppUser>(userDto);
             user.Id = Guid.NewGuid().ToString();
+
             IdentityResult result = await _userManager.CreateAsync(user, userDto.Password);
 
             CreateUserResponseDto response = new() { Succeeded = result.Succeeded };
 
             if (result.Succeeded)
+            {
+                Basket basket = new() { Name = $"{user.UserName} Genel Sepeti", UserId = user.Id };
+                await _unitOfWork.BasketRepository.AddAsync(basket);
+                user.Baskets.Add(basket);
                 response.Message = ("Kayıt Başarılı");
+                await _unitOfWork.CommitAsync();
+
+            }
             else
                 foreach (IdentityError error in result.Errors)
                     response.Message = (error.Description);
