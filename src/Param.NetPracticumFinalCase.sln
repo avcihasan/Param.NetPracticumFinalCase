@@ -23,7 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{483DEAFA-39E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8C42FE32-3884-4B29-B4F1-AD898988D900}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductTracking.UnitTest", "..\tests\ProductTracking.UnitTest\ProductTracking.UnitTest.csproj", "{F59D0DBD-1827-4BB3-8938-67263B00A7C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductTracking.UnitTest", "..\tests\ProductTracking.UnitTest\ProductTracking.UnitTest.csproj", "{F59D0DBD-1827-4BB3-8938-67263B00A7C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{1FCF9522-AB85-404D-930F-48BB0C4E0FD5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
