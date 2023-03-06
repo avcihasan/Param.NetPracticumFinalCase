@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductTracking.Application.DTOs.ResponseDTOs;
 using ProductTracking.Application.Features.Commands.CategoryCommands.CreateCategory;
@@ -6,6 +7,7 @@ using ProductTracking.Application.Features.Commands.CategoryCommands.RemoveCateg
 using ProductTracking.Application.Features.Commands.CategoryCommands.UpdateCategory;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetAllCategories;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCategory;
+using System.Data;
 
 namespace ProductTracking.API.Controllers
 {
@@ -32,6 +34,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<GetByIdCategoryQueryResponse>.Success(await _mediator.Send(getByIdCategoryQueryRequest), 200));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryCommandRequest createCategoryCommandRequest)
         {
@@ -39,6 +42,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateCategory(UpdateCategoryCommandRequest updateCategoryCommandRequest)
         {
@@ -46,6 +50,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{CategoryId}")]
         public async Task<IActionResult> RemoveCategory([FromRoute] RemoveCategoryCommandRequest removeCategoryCommandRequest)
         {

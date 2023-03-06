@@ -15,15 +15,14 @@ using Xunit;
 
 namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
 {
-    public class BasketServiceTest:DBConfiguration
+    public class BasketServiceTest
     {
         private readonly Mock<UserManager<AppUser>> _mockUserManager;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
         private readonly Mock<IUserService> _mockUserService;
-        private readonly Mock<IMongoClient> _mongoClient;
         private readonly Mock<IMongoDbService> _mongoDbService;
         private readonly BasketService _basketService;
-
+        private readonly DBConfiguration _db;
 
         public BasketServiceTest()
         {
@@ -33,11 +32,10 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
 
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockUserService = new Mock<IUserService>();
-            _mongoClient = new Mock<IMongoClient>();
             _mongoDbService = new Mock<IMongoDbService>();
 
             _basketService = new BasketService(_mockUserManager.Object, _mockUnitOfWork.Object, _mockUserService.Object, _mongoDbService.Object);
-
+            _db = new DBConfiguration();
         }
 
         [Fact]
@@ -60,16 +58,17 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         [Fact]
         public async Task ContextUser_UserIsFound_ReturnBasket()
         {
-            AppUser user = context.Users.First();
-
+           
             _mockUserManager.Setup(x => x.Users)
-                .Returns(context.Users);
+                .Returns(_db.context.Users);
             _mockUserService.Setup(x => x.GetOnlineUserAsync())
-                .ReturnsAsync(user);
+                .ReturnsAsync(await _db.context.Users.FirstOrDefaultAsync());
             _mockUnitOfWork.Setup(x => x.CommitAsync())
                 .Returns(Task.CompletedTask);
-
-              var result= await _basketService.ContextUser(context.Categories.First().Id.ToString());
+            _mockUnitOfWork.Setup(x => x.CategoryRepository.GetByIdAsync(It.IsAny<string>(), It.IsAny<bool>()))
+                .ReturnsAsync(new Category());
+                
+            var result= await _basketService.ContextUser(Guid.NewGuid().ToString());
 
             _mockUserService.Verify(x => x.GetOnlineUserAsync(), Times.Once);
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Once);
@@ -127,7 +126,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         {
 
             _mockUnitOfWork.Setup(x => x.BasketItemRepository.GetByIdAsync(It.IsAny<string>(), It.IsAny<bool>()))
-                .ReturnsAsync( await context.BasketItems.FirstOrDefaultAsync()) ;
+                .ReturnsAsync( await _db.context.BasketItems.FirstOrDefaultAsync()) ;
 
 
             await _basketService.RemoveBasketItemAsync(It.IsAny<string>());
@@ -144,9 +143,9 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         public async Task GetBasketItemsAsync_ActionExecutes_ReturnBasketItems()
         {
             _mockUserService.Setup(x => x.GetOnlineUserAsync())
-                .ReturnsAsync(await context.Users.FirstAsync());
+                .ReturnsAsync(await _db.context.Users.FirstAsync());
             _mockUnitOfWork.Setup(x => x.BasketRepository.GetAll(It.IsAny<bool>()))
-                .Returns(context.Baskets);
+                .Returns(_db.context.Baskets);
 
             var result = await _basketService.GetBasketItemsAsync();
 
@@ -163,7 +162,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         public async Task UpdateQuantityAsync_BasketItemIsNotFound_ReturnException()
         {
             BasketItem basketItem = null;
-            UpdateBasketItemDto updateBasketItem = new() { BasketItemId=context.BasketItems.First().ToString(),Quantity=5};
+            UpdateBasketItemDto updateBasketItem = new() { BasketItemId= _db.context.BasketItems.First().ToString(),Quantity=5};
             _mockUnitOfWork.Setup(x => x.BasketItemRepository.GetByIdAsync(It.IsAny<string>(), It.IsAny<bool>()))
                 .ReturnsAsync(basketItem);
 
@@ -179,14 +178,15 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         [Fact]
         public async Task UpdateQuantityAsync_BasketItemIsFound_UpdateBasketItemQuantity()
         {
-            BasketItem basketItem = await context.BasketItems.FirstAsync();
+            BasketItem basketItem = await _db.context.BasketItems.FirstAsync();
 
             UpdateBasketItemDto updateBasketItem = new() 
-            { BasketItemId = basketItem.Id.ToString(), 
+            { 
+                BasketItemId = basketItem.Id.ToString(), 
                 Quantity = 5 
             };
             _mockUnitOfWork.Setup(x => x.BasketItemRepository.GetByIdAsync(It.IsAny<string>(), It.IsAny<bool>()))
-                .ReturnsAsync(await context.BasketItems.FirstOrDefaultAsync());
+                .ReturnsAsync(await _db.context.BasketItems.FirstOrDefaultAsync());
             _mockUnitOfWork.Setup(x => x.CommitAsync())
                 .Returns(Task.CompletedTask);
 
@@ -196,5 +196,39 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Once);
 
         }
+
+
+
+        [Fact]
+        public async Task SearchBasketAsync_BasketIsNotFound_ReturnException()
+        {
+         
+            _mockUserService.Setup(x => x.GetOnlineUserAsync())
+                .ReturnsAsync(_db.context.Users.FirstOrDefault());
+            _mockUnitOfWork.Setup(x => x.BasketRepository.GetWhere(It.IsAny<System.Linq.Expressions.Expression<System.Func<Basket, bool>>>(), false))
+                .Returns(_db.context.Baskets);
+                
+
+            Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketService.SearchBasketAsync("test1"));
+
+            Assert.Equal("Aranan Basket Bulunamadı", ex.Message);
+        }
+
+        //[Fact]
+        //public async Task SearchBasketAsync_BasketIsFound_ReturnException()
+        //{
+
+        //    _mockUserService.Setup(x => x.GetOnlineUserAsync())
+        //        .ReturnsAsync(_db.context.Users.FirstOrDefault());
+        //    _mockUnitOfWork.Setup(x => x.BasketRepository.GetWhere(It.IsAny<System.Linq.Expressions.Expression<System.Func<Basket, bool>>>(), false))
+        //        .Returns(_db.context.Baskets);
+
+        //    string temp = _db.context.Baskets.First().Name;
+        //    var result =await _basketService.SearchBasketAsync(temp);
+
+        //    Assert.IsType<List<Basket>>(result);
+
+        //}
+
     }
 }

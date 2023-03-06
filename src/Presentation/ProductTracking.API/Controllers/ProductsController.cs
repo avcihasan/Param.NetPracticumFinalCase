@@ -34,6 +34,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<GetByIdProductQueryResponse>.Success(await _mediator.Send(getByIdProductQueryRequest), 200));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductCommandRequest createProductCommandRequest)
         {
@@ -41,6 +42,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateProduct(UpdateProductCommandRequest updateProductCommandRequest)
         {
@@ -48,6 +50,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{ProductId}")]
         public async Task<IActionResult> RemoveProduct([FromRoute] RemoveProductCommandRequest removeProductCommandRequest)
         {

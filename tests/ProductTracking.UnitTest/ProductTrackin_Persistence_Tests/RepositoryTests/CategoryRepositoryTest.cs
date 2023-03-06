@@ -10,12 +10,14 @@ using Xunit;
 
 namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTests
 {
-    public class CategoryRepositoryTest:DBConfiguration
+    public class CategoryRepositoryTest
     {
         private readonly CategoryRepository _categoryRepository;
+        private readonly DBConfiguration _db;
         public CategoryRepositoryTest()
         {
-            _categoryRepository = new CategoryRepository(context);
+            _db=new DBConfiguration();
+            _categoryRepository = new CategoryRepository(_db.context);
         }
 
         [Theory]
@@ -26,15 +28,15 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         {
             Category category = new() { Name = name };
             var result = await _categoryRepository.AddAsync(category);
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
-            var categoryResult = context.Categories.LastOrDefault();
+            var categoryResult = await _db.context.Categories.FirstOrDefaultAsync(x=>x.Name==name);
 
             Assert.IsType<bool>(result);
             Assert.IsType<Category>(categoryResult);
 
             Assert.True(result);
-                    
+            Assert.NotNull(categoryResult);     
             Assert.Equal(category.Name, categoryResult.Name);
         }
 
@@ -44,23 +46,23 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData("deneme2", "deneme5")]
         public async Task AddRangeAsync_AddingCategories_CreateCategoriesAndReturnTrue(string name1, string name2)
         {
-            List<Category> categories = new()
-            {
-                new() { Name = name1 },
-                new() { Name = name2 }
-            };
+            Category category1 = new() {Id=Guid.NewGuid(), Name = name1 };
+            Category category2 = new() { Id = Guid.NewGuid(), Name = name2 };
 
-            var beforeRecording = context.Categories.Count();
+          
 
-            var result = await _categoryRepository.AddRangeAsync(categories);
-            await context.SaveChangesAsync();
-            var afterRecording = context.Categories.Count();
 
-            var lastCategory = context.Categories.LastOrDefault();
+            var result = await _categoryRepository.AddRangeAsync(new() { category1, category2 });
+            await _db.context.SaveChangesAsync();
 
-            Assert.Equal(lastCategory.Id, categories.LastOrDefault().Id);
+            Category _category1 =await _db.context.Categories.FirstOrDefaultAsync(x => x.Id == category1.Id);
+            Category _category2 = await _db.context.Categories.FirstOrDefaultAsync(x => x.Id == category2.Id);
+
+            Assert.Equal(_category1.Id, category1.Id);
+            Assert.Equal(_category2.Id, category2.Id);
+            Assert.Equal(_category2.Name, category2.Name);
+            Assert.Equal(_category1.Name, category1.Name);
             Assert.IsType<bool>(result);
-            Assert.Equal(beforeRecording + categories.Count, afterRecording);
 
             Assert.True(result);
 
@@ -94,7 +96,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnCategory(bool tracking)
         {
-            var category = await context.Categories.FirstOrDefaultAsync();
+            Category category =await _db.context.Categories.FirstOrDefaultAsync();     
 
             var result = await _categoryRepository.GetByIdAsync(category.Id.ToString(), tracking);
 
@@ -107,12 +109,12 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task Remove_ActionExecutes_RemoveCategoryAndReturnTrue()
         {
-            var category =await context.Categories.FirstOrDefaultAsync();
+            var category =await _db.context.Categories.FirstOrDefaultAsync();
 
             var result = _categoryRepository.Remove(category);
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
-            var newCategory = await context.Categories.Where(x => x.Id == category.Id).FirstOrDefaultAsync();
+            var newCategory = await _db.context.Categories.FirstOrDefaultAsync(x => x.Id == category.Id);
 
             Assert.Null(newCategory);
         }
@@ -130,12 +132,13 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveCategoryAndReturnTrue()
         {
-            var category = await context.Categories.FirstOrDefaultAsync();
+            Category category =await _db.context.Categories.FirstOrDefaultAsync();
+
 
             var result = await _categoryRepository.RemoveByIdAsync(category.Id.ToString());
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
-            var newCategory = await context.Categories.Where(x => x.Id == category.Id).FirstOrDefaultAsync();
+            var newCategory = await _db.context.Categories.FirstOrDefaultAsync(x => x.Id == category.Id);
 
             Assert.True(result);
             Assert.Null(newCategory);

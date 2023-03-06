@@ -17,18 +17,6 @@ namespace ProductTracking.Persistence.Repositories
         {
         }
 
-        public async Task<Basket> GetBasketWithİtems(string basketId,bool tracking=true)
-        {
-            IQueryable<Basket> baskets = _dbSet.Include(x=>x.BasketItems).ThenInclude(x=>x.Product).ThenInclude(x=>x.Category).Include(x=>x.User).AsQueryable();
-            if (!tracking)
-                baskets = baskets.AsNoTracking();
-
-            Basket basket = await baskets.FirstOrDefaultAsync(x => x.Id == Guid.Parse(basketId));
-            if (baskets == null)
-                throw new Exception("Basket Bulunamadı!");
-            return basket;
-        }
-
         public async Task<Basket> GetSingleBasketWithPropertiesAsync(Expression<Func<Basket, bool>> method, bool tracking = true)
         {
             IQueryable<Basket> baskets = _dbSet.Include(x => x.BasketItems).ThenInclude(x => x.Product).ThenInclude(x => x.Category).Include(x => x.User).AsQueryable();

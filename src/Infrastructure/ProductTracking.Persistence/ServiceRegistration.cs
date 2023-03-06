@@ -33,6 +33,7 @@ namespace ProductTracking.Persistence
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<IMongoDbService, MongoDbService>();
+            service.AddScoped<IRoleService, RoleService>();
         }
     }
 }

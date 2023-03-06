@@ -51,7 +51,9 @@ namespace ProductTracking.Persistence.Services
             {
                 Basket basket = new() { Name = $"{user.UserName} Genel Sepeti", UserId = user.Id };
                 await _unitOfWork.BasketRepository.AddAsync(basket);
+               
                 user.Baskets.Add(basket);
+
                 response.Message = ("Kayıt Başarılı");
                 await _unitOfWork.CommitAsync();
 

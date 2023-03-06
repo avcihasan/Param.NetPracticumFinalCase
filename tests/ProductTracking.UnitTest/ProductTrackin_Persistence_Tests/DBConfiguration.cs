@@ -75,7 +75,8 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests
                         UserName = "deneme"
                     });
 
-                context.SaveChanges();
+            context.SaveChanges();
+
             }
         }
     }

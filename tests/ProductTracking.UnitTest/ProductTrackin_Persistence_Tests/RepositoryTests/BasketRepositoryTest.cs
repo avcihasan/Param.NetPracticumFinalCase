@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DnsClient;
+using Microsoft.EntityFrameworkCore;
+using ProductTracking.Application.Repositories;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Persistence.Repositories;
@@ -12,21 +14,26 @@ using Xunit;
 
 namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTests
 {
-    public class BasketRepositoryTest:DBConfiguration
+    public class BasketRepositoryTest 
     {
         private readonly BasketRepository _basketRepository;
+        private readonly DBConfiguration _db;
         public BasketRepositoryTest()
         {
-            _basketRepository = new BasketRepository(context);
+            _db=new DBConfiguration();
+            _basketRepository = new BasketRepository(_db.context);
         }
 
         [Fact]
-        public async Task AddAsync_AddingBasket_CreateBasketAndReturnTrue( )
+        public async Task AddAsync_AddingBasket_CreateBasketAndReturnTrue()
         {
-            Basket basket = new() { CategoryId=context.Categories.First().Id,UserId=context.Users.First().Id };
+            Basket basket = new() { Name="Test Basket" };
             var result = await _basketRepository.AddAsync(basket);
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
+            Basket _basket =await _db.context.Baskets.FirstOrDefaultAsync(x=>x.Id==basket.Id);
+
+            Assert.Equal(_basket.Name,basket.Name);
 
             Assert.IsType<bool>(result);
 
@@ -37,29 +44,23 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [Fact]
         public async Task AddRangeAsync_AddingBaskets_CreateBasketsAndReturnTrue()
         {
-            Category firstCategory = await context.Categories.FirstOrDefaultAsync();
-            Category lastCategory = await context.Categories.LastOrDefaultAsync();
-            AppUser user1 = await context.Users.FirstOrDefaultAsync();
-            AppUser user2 = await context.Users.LastOrDefaultAsync();
+            Basket basket1 = new() { Name = "Test Kategori 1", IsComplete = true };
+            Basket basket2 = new() { Name = "Test Kategori 2", IsComplete = false };
+       
 
-            List<Basket> baskets = new()
-            {
-                new() { CategoryId=firstCategory.Id,UserId=user1.Id },
-                new() { CategoryId=lastCategory.Id,UserId=user2.Id }
-            };
 
-            var beforeRecording = await context.Baskets.CountAsync();
+            var result = await _basketRepository.AddRangeAsync(new() { basket1,basket2});
+            await _db.context.SaveChangesAsync();
 
-            var result = await _basketRepository.AddRangeAsync(baskets);
-            await context.SaveChangesAsync();
-            var afterRecording = await context.Baskets.CountAsync();
-
+            Basket _basket1 = await _db.context.Baskets.FirstOrDefaultAsync(x => x.Id == basket1.Id);
+            Basket _basket2 = await _db.context.Baskets.FirstOrDefaultAsync(x => x.Id == basket2.Id);
 
             Assert.IsType<bool>(result);
-            Assert.Equal(beforeRecording + baskets.Count, afterRecording);
-
             Assert.True(result);
-
+            Assert.NotNull(_basket1);
+            Assert.NotNull(_basket2);
+            Assert.True(_basket1.IsComplete);
+            Assert.False(_basket2.IsComplete);
         }
 
 
@@ -70,7 +71,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         //{
         //    var result = _basketRepository.GetAll(tracking);
 
-        //    Assert.IsType<IQueryable<Category>>(result);
+        //    Assert.IsAssignableFrom<IQueryable<Category>>(result);
 
 
         //}
@@ -81,7 +82,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         public async Task GetByIdAsync_InvalidId_ReturnException(bool tracking)
         {
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketRepository.GetByIdAsync(Guid.NewGuid().ToString(), tracking));
-            Assert.Equal("Entity Bulunamadı!",ex.Message);
+            Assert.Equal("Entity Bulunamadı!", ex.Message);
 
         }
 
@@ -90,28 +91,27 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         [InlineData(false)]
         public async Task GetByIdAsync_ValidId_ReturnBasket(bool tracking)
         {
-            var basket = await context.Baskets.FirstAsync();
+            Basket basket =await _db.context.Baskets.FirstOrDefaultAsync();
 
             var result = await _basketRepository.GetByIdAsync(basket.Id.ToString(), tracking);
 
             Assert.IsType<Basket>(result);
             Assert.NotNull(result);
             Assert.Equal(basket.Id, result.Id);
-            Assert.Equal(basket.CategoryId, result.CategoryId);
-            Assert.Equal(basket.CreatedDate, result.CreatedDate);
+            Assert.Equal(basket.Name, result.Name);
         }
 
         [Fact]
         public async Task Remove_ActionExecutes_RemoveBasketAndReturnTrue()
         {
-            var basket = await context.Baskets.FirstOrDefaultAsync();
+            Basket basket = await _db.context.Baskets.FirstOrDefaultAsync();
 
             var result = _basketRepository.Remove(basket);
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
-            var newBasket = await context.Categories.Where(x => x.Id == basket.Id).FirstOrDefaultAsync();
+            var _basket = await _db.context.Baskets.Where(x => x.Id == basket.Id).FirstOrDefaultAsync();
 
-            Assert.Null(newBasket);
+            Assert.Null(_basket);
         }
 
 
@@ -121,22 +121,45 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.RepositoryTe
         {
 
             Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketRepository.RemoveByIdAsync(Guid.NewGuid().ToString()));
-            Assert.Equal("Entity Bulunamadı!",ex.Message );
+            Assert.Equal("Entity Bulunamadı!", ex.Message);
         }
 
         [Fact]
         public async Task RemoveByIdAsync_ValidId_RemoveBasketAndReturnTrue()
         {
-            var basket = await context.Baskets.FirstOrDefaultAsync();
+            Basket basket = await _db.context.Baskets.FirstOrDefaultAsync();
 
             var result = await _basketRepository.RemoveByIdAsync(basket.Id.ToString());
-            await context.SaveChangesAsync();
+            await _db.context.SaveChangesAsync();
 
-            var newBasket = await context.Categories.Where(x => x.Id == basket.Id).FirstOrDefaultAsync();
+            var _basket = await _db.context.Baskets.Where(x => x.Id == basket.Id).FirstOrDefaultAsync();
 
             Assert.True(result);
-            Assert.Null(newBasket);
+            Assert.Null(_basket);
         }
+
+
+
+        [Fact]
+        public async Task GetSingleBasketWithPropertiesAsync_InvalidUser_ReturnException()
+        {
+            Exception ex = await Assert.ThrowsAsync<Exception>(async () => await _basketRepository.GetSingleBasketWithPropertiesAsync(x=>x.Name.ToString()=="",false));
+            Assert.Equal("Basket Bulunamadı!", ex.Message);
+        }
+        [Fact]
+        public async Task GetSingleBasketWithPropertiesAsync_ValidUser_ReturnException()
+        {
+            Basket basket = await _db.context.Baskets.FirstOrDefaultAsync();
+
+            var result =await _basketRepository.GetSingleBasketWithPropertiesAsync(x=>x.Id==basket.Id);
+            await _db.context.SaveChangesAsync();
+
+
+            Assert.NotNull(result);
+            Assert.Equal(basket.Name, result.Name);
+            Assert.Equal(basket.IsComplete, result.IsComplete);
+        }
+
 
         //[Fact]
         //public async Task Update_ActionExecutes_UpdateCategoryAndReturnTrue()

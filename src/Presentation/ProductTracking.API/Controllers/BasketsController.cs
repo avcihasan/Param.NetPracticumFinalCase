@@ -62,6 +62,7 @@ namespace ProductTracking.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        [Authorize(Roles ="admin")]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetCompleteBaskets([FromQuery] GetCompletedBasketsQueryRequest getCompletedBasketsQueryRequest)
         {
