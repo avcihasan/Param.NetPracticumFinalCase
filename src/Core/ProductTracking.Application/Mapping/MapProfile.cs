@@ -9,6 +9,7 @@ using ProductTracking.Application.Features.Commands.ProductCommands.UpdateProduc
 using ProductTracking.Application.Features.Commands.UserCommands.CreateUser;
 using ProductTracking.Application.Features.Commands.UserCommands.LoginUser;
 using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Features.Queries.BasketQueries.GetCompletedBaskets;
 using ProductTracking.Application.Features.Queries.BasketQueries.SearchBasket;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetAllCategories;
 using ProductTracking.Application.Features.Queries.CategoryQueries.GetByIdCategory;
@@ -48,7 +49,11 @@ namespace ProductTracking.Application.Mapping
             CreateMap<BasketItem, GetBasketItemsQueryResponse>();
 
             CreateMap<Basket, SearchBasketQueryResponse>();
-            CreateMap<Basket, BasketMongoDb>();
+            CreateMap<Basket, BasketMongoDb>()
+                .ForMember(x => x.Id, opt => opt.Ignore())
+                .ForMember(x => x.BasketItems, opt => opt.Ignore());
+           
+            CreateMap<BasketMongoDb, GetCompletedBasketsQueryResponse>();
 
         }
     }

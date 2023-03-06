@@ -10,6 +10,8 @@ namespace ProductTracking.Domain.Entities.MongoDbEntities
     {
         public int Quantity { get; set; }
         public string ProductName { get; set; }
+        public decimal TotalPrice { get; set; }
+
 
     }
 }

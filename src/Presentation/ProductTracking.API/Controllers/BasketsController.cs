@@ -8,6 +8,7 @@ using ProductTracking.Application.Features.Commands.BasketCommands.CompleteBaske
 using ProductTracking.Application.Features.Commands.BasketCommands.RemoveBasketItem;
 using ProductTracking.Application.Features.Commands.BasketCommands.UpdateBasketItemQuantity;
 using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Features.Queries.BasketQueries.GetCompletedBaskets;
 using ProductTracking.Application.Features.Queries.BasketQueries.SearchBasket;
 using ProductTracking.Domain.Entities;
 
@@ -59,6 +60,12 @@ namespace ProductTracking.API.Controllers
         {
             await _mediator.Send(completeBasketCommandRequest);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetCompleteBaskets([FromQuery] GetCompletedBasketsQueryRequest getCompletedBasketsQueryRequest)
+        {
+            return CreateActionResult(CustomResponseDto<List<GetCompletedBasketsQueryResponse>>.Success(await _mediator.Send(getCompletedBasketsQueryRequest),200));
         }
     }
 }

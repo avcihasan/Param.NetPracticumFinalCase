@@ -13,7 +13,7 @@ namespace ProductTracking.Domain.Entities
 #nullable disable
         public DateTime? CompletedDate { get; set; }
         public bool IsComplete { get; set; } = false;
-
+        public decimal BasketTotalPrice { get; set; }
         public string UserId { get; set; }
         public AppUser User { get; set; }
 

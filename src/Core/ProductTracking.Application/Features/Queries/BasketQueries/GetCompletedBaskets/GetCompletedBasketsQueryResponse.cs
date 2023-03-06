@@ -1,11 +1,14 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using ProductTracking.Domain.Entities.MongoDbEntities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ProductTracking.Domain.Entities.MongoDbEntities
+namespace ProductTracking.Application.Features.Queries.BasketQueries.GetCompletedBaskets
 {
-    public class BasketMongoDb
+    public class GetCompletedBasketsQueryResponse
     {
-        [BsonId]
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
         public string Name { get; set; }
 
@@ -20,7 +23,7 @@ namespace ProductTracking.Domain.Entities.MongoDbEntities
 
         public UserMongoDb User { get; set; } = new();
 
-        
+
 
         public List<BasketItemMongoDb> BasketItems { get; set; } = new();
     }

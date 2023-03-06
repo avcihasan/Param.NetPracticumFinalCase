@@ -3,20 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using Moq;
-using ProductTracking.Application.Abstractions.Basket;
 using ProductTracking.Application.Abstractions.MongoDb;
 using ProductTracking.Application.Abstractions.Services;
 using ProductTracking.Application.DTOs.BasketItemDTOs;
-using ProductTracking.Application.Features.Queries.BasketQueries.GetBasketItems;
+using ProductTracking.Application.Mapping;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
 using ProductTracking.Persistence.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
@@ -27,7 +21,7 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
         private readonly Mock<IUserService> _mockUserService;
         private readonly Mock<IMongoClient> _mongoClient;
-        private readonly Mock<IMongoDbSettings> _mongoDbSettings;
+        private readonly Mock<IMongoDbService> _mongoDbService;
         private readonly BasketService _basketService;
 
 
@@ -40,9 +34,9 @@ namespace ProductTracking.UnitTest.ProductTrackin_Persistence_Tests.ServiceTests
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockUserService = new Mock<IUserService>();
             _mongoClient = new Mock<IMongoClient>();
-            _mongoDbSettings = new Mock<IMongoDbSettings>();
+            _mongoDbService = new Mock<IMongoDbService>();
 
-            _basketService = new BasketService(_mockUserManager.Object, _mockUnitOfWork.Object, _mockUserService.Object,_mongoDbSettings.Object, _mongoClient.Object);
+            _basketService = new BasketService(_mockUserManager.Object, _mockUnitOfWork.Object, _mockUserService.Object, _mongoDbService.Object);
 
         }
 

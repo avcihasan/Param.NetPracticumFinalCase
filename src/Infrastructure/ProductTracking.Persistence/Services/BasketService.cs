@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using ProductTracking.Application.Abstractions.Basket;
@@ -9,7 +8,6 @@ using ProductTracking.Application.DTOs.BasketItemDTOs;
 using ProductTracking.Application.UnitOfWorks;
 using ProductTracking.Domain.Entities;
 using ProductTracking.Domain.Entities.Identity;
-using ProductTracking.Domain.Entities.MongoDbEntities;
 
 namespace ProductTracking.Persistence.Services
 {
@@ -19,19 +17,16 @@ namespace ProductTracking.Persistence.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
         private readonly IMongoDbService _mongoDbService;
-        private readonly IMapper _mapper;
 
-        public BasketService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IUserService userService, IMongoDbService mongoDbService, IMapper mapper)
+        public BasketService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IUserService userService, IMongoDbService mongoDbService)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _userService = userService;
-
             _mongoDbService = mongoDbService;
-            _mapper = mapper;
         }
 
-        public async Task<Basket> ContextUser(string categoryId)
+        public async Task<Basket> ContextUser(string categoryId)//basket var geri döndürür yoksa yeni oluşturur
         {
             AppUser getUser = await _userService.GetOnlineUserAsync();
 
@@ -42,7 +37,7 @@ namespace ProductTracking.Persistence.Services
                          .FirstOrDefaultAsync(u => u.UserName == getUser.UserName);
 
                 Basket targetBasket = null;
-                if (user.Baskets.Any(x => x.CategoryId.ToString() == categoryId && x.IsComplete==false))
+                if (user.Baskets.Any(x => x.CategoryId.ToString() == categoryId && x.IsComplete == false))
                     targetBasket = user.Baskets.FirstOrDefault(x => x.CategoryId.ToString() == categoryId);
                 else
                 {
@@ -59,33 +54,49 @@ namespace ProductTracking.Persistence.Services
 
         public async Task AddItemToBasketAsync(CreateBasketItemDto basketItem)
         {
-            Product p = await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId);
-            Basket basket = await ContextUser(p.CategoryId.ToString());
-            Basket generalBasket = await _unitOfWork.BasketRepository.GetSingleAsync(x => x.CategoryId == null && x.UserId == basket.UserId);
-            if (basket != null)
+            Product product = await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId);
+            Basket basket = await ContextUser(product.CategoryId.ToString());
+            Basket generalBasket = await _unitOfWork.BasketRepository.GetSingleBasketWithPropertiesAsync(x => x.CategoryId == null && x.UserId == basket.UserId && x.IsComplete == false);
+
+            BasketItem _basketItem = await _unitOfWork.BasketItemRepository.GetSingleAsync(x => x.BasketId == basket.Id && x.ProductId == Guid.Parse(basketItem.ProductId));
+            if (_basketItem != null)
             {
-                BasketItem _basketItem = await _unitOfWork.BasketItemRepository.GetSingleAsync(x => x.BasketId == basket.Id && x.ProductId == Guid.Parse(basketItem.ProductId));
-                if (_basketItem != null)
-                    _basketItem.Quantity+= basketItem.Quantity;
-                else
+                _basketItem.Quantity += basketItem.Quantity;
+                _basketItem.TotalPrice = _basketItem.Quantity * (await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId)).UnitPrice;
+            }
+            else
+            {
+                await _unitOfWork.BasketItemRepository.AddAsync(new()
                 {
-                    await _unitOfWork.BasketItemRepository.AddAsync(new()
-                    {
-                        BasketId = generalBasket.Id,
-                        ProductId = Guid.Parse(basketItem.ProductId),
-                        Quantity = basketItem.Quantity
-                    });
-                      await _unitOfWork.BasketItemRepository.AddAsync(new()
-                    {
-                        BasketId = basket.Id,
-                        ProductId = Guid.Parse(basketItem.ProductId),
-                        Quantity = basketItem.Quantity
-                    });
-                }
-                  
+                    BasketId = generalBasket.Id,
+                    ProductId = Guid.Parse(basketItem.ProductId),
+                    Quantity = 0,
+                    TotalPrice = basketItem.Quantity * (await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId)).UnitPrice
+                });
+                await _unitOfWork.BasketItemRepository.AddAsync(new()
+                {
+                    BasketId = basket.Id,
+                    ProductId = Guid.Parse(basketItem.ProductId),
+                    Quantity = basketItem.Quantity,
+                    TotalPrice = basketItem.Quantity * (await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId)).UnitPrice
+                });
                 await _unitOfWork.CommitAsync();
 
             }
+
+            BasketItem _generalBasketItem = await _unitOfWork.BasketItemRepository.GetSingleAsync(x => x.BasketId == generalBasket.Id && x.ProductId == Guid.Parse(basketItem.ProductId));
+            _generalBasketItem.Quantity += basketItem.Quantity;
+            _generalBasketItem.TotalPrice = _generalBasketItem.Quantity * (await _unitOfWork.ProductRepository.GetByIdAsync(basketItem.ProductId)).UnitPrice;
+
+
+            var newbasket = await _unitOfWork.BasketRepository.GetSingleBasketWithPropertiesAsync(x => x.CategoryId == basket.CategoryId && x.UserId == basket.UserId && x.IsComplete == false); ;
+            basket.BasketTotalPrice = 0;
+            generalBasket.BasketTotalPrice = 0;
+            foreach (var item in newbasket.BasketItems)
+                basket.BasketTotalPrice += item.TotalPrice;
+            foreach (var item in generalBasket.BasketItems)
+                generalBasket.BasketTotalPrice += item.TotalPrice;
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<List<BasketItem>> GetBasketItemsAsync()
@@ -131,11 +142,9 @@ namespace ProductTracking.Persistence.Services
         public async Task<List<Basket>> SearchBasketAsync(string searchBasket)
         {
             searchBasket = searchBasket.ToLower();
-            AppUser user =await _userService.GetOnlineUserAsync();
+            AppUser user = await _userService.GetOnlineUserAsync();
 
-            //IQueryable<Basket> baskets=_unitOfWork.BasketRepository.GetAll().Include(x=>x.Category).Where(x=>x.UserId== user.Id);
-
-            IQueryable<Basket> baskets =_unitOfWork.BasketRepository.GetWhere(x => x.UserId == user.Id).Include(x => x.Category).Include(x=>x.BasketItems).ThenInclude(x=>x.Product);
+            IQueryable<Basket> baskets = _unitOfWork.BasketRepository.GetWhere(x => x.UserId == user.Id).Include(x => x.Category).Include(x => x.BasketItems).ThenInclude(x => x.Product);
 
             List<Basket> returnBaskets = new();
 
@@ -159,17 +168,52 @@ namespace ProductTracking.Persistence.Services
 
         public async Task CompleteBasketAsync(Guid basketId)
         {
-            Basket basket=await _unitOfWork.BasketRepository.GetBasketWithİtems(basketId.ToString());
-            basket.IsComplete= true;
+            Basket basket = await _unitOfWork.BasketRepository.GetSingleBasketWithPropertiesAsync(x => x.Id == basketId);
+            if (basket.IsComplete)
+                throw new Exception("Basket Zaten Onaylı!");
+            basket.IsComplete = true;
+            basket.CompletedDate = DateTime.Now;
             await _unitOfWork.CommitAsync();
-            BasketMongoDb basketMongoDb = _mapper.Map<BasketMongoDb>(basket);
-            basketMongoDb.CategoryName = basket.Category.Name;
+            await _mongoDbService.CreatAsync(basket);
 
+            if (basket.CategoryId != null)
+            {
+                Basket generalBasket = await _unitOfWork.BasketRepository.GetSingleBasketWithPropertiesAsync(x => x.CategoryId == null && x.UserId == basket.UserId);
+                await EditGeneralBasketAsync(generalBasket, basket.CategoryId.ToString());
+            }
+            else
+                await EditCategoryBasketAsync(basket);
+
+            await _unitOfWork.CommitAsync();
+
+        }
+
+        private async Task EditGeneralBasketAsync(Basket basket, string categoryId)
+        {
+            basket.BasketTotalPrice = 0;
             foreach (BasketItem basketItem in basket.BasketItems)
-                basketMongoDb.BasketItems.Add(new() { Quantity=basketItem.Quantity,ProductName=basketItem.Product.Name});
-            
-            basketMongoDb.Id = null;
-            await _mongoDbService.CreatAsync(basketMongoDb);
+            {
+                if (basketItem.Product.CategoryId.ToString() == categoryId)
+                    await RemoveBasketItemAsync(basketItem.Id.ToString());
+                else
+                    basket.BasketTotalPrice += basketItem.TotalPrice;
+            }
+        }
+
+        private async Task EditCategoryBasketAsync(Basket basket)
+        {
+            foreach (BasketItem BasketItem in basket.BasketItems)
+            {
+                Basket tempBasket = await _unitOfWork.BasketRepository.GetSingleBasketWithPropertiesAsync(x => x.CategoryId == BasketItem.Product.CategoryId && x.UserId == basket.UserId && x.IsComplete == false);
+                if (tempBasket != null)
+                    foreach (BasketItem basketItem1 in tempBasket.BasketItems)
+                        await RemoveBasketItemAsync(basketItem1.Id.ToString());
+                await _unitOfWork.BasketRepository.RemoveByIdAsync(tempBasket.Id.ToString());
+            }
+            AppUser user = await _userManager.FindByIdAsync(basket.UserId);
+            Basket newBasket = new() { Name = $"{user.Name} Genel Sepeti", UserId = user.Id };
+            await _unitOfWork.BasketRepository.AddAsync(newBasket);
+            user.Baskets.Add(newBasket);
         }
     }
 }
